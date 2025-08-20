@@ -1,22 +1,48 @@
-import { Conditions, Alerts, Places } from "./components";
-import { getConditions, determineMoonPhase, convertToCamelCase } from "./utils";
-import { useState } from "react";
-import { VisualCrossing } from "./types/visualcrossing"
+import { Conditions, Alerts, Places, Moon } from "./components";
+import type { MoonPhase, VisualCrossing } from "./types";
+import { getConditions, determineMoonPhase } from "./utils";
+import { useState, useEffect } from "react";
 
 export const Home = () => {
   const [data, setData] = useState<VisualCrossing | null>(null);
   const [loading, setLoading] = useState(false);
-  const [moonPhase, setMoonPhase] = useState("");
+  const [moonPhase, setMoonPhase] = useState<MoonPhase>("Full Moon");
   // const [userCoords, setUserCoords] = useState("0,0");
+
+  useEffect(() => {
+    const fetchMoonPhase = async () => {
+      try {
+        const conditions = await getConditions({ location: "Austin, TX" });
+        if (conditions?.days?.length > 0) {
+          const currentMoonPhase = determineMoonPhase(
+            conditions.days[0].moonphase
+          );
+          setMoonPhase(currentMoonPhase);
+        }
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMoonPhase();
+  }, []);
+
+  useEffect(() => {
+    if (moonPhase) {
+      console.log("moon phase updated:", moonPhase);
+    }
+  }, [moonPhase]);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     let location = formData.get("location");
 
+    setLoading(true);
     try {
-      setLoading(true);
-      const conditions = await getConditions(location);
+      const conditions = await getConditions({ location: location });
 
       if (conditions && conditions.resolvedAddress) {
         setData(conditions);
@@ -24,9 +50,7 @@ export const Home = () => {
         // const currentCoords = `${conditions.latitude},${conditions.longitude}`;
         // setUserCoords(currentCoords);
 
-        const currentMoonPhase = conditions.days[0].moonphase;
-        setMoonPhase(determineMoonPhase(currentMoonPhase));
-        console.log(data)
+        console.log("conditions:", conditions);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -39,6 +63,9 @@ export const Home = () => {
     <main>
       <h1>Moongaz.ing</h1>
 
+      <Moon size={100} phase={moonPhase} />
+      <h2>{moonPhase}</h2>
+
       <form onSubmit={onSubmit}>
         <label htmlFor="location">Enter location</label>
         <input name="location" id="location" placeholder="city"></input>
@@ -48,13 +75,6 @@ export const Home = () => {
         <p>Loading...</p>
       ) : data ? (
         <>
-          <img
-            src={`./moon/${convertToCamelCase(moonPhase)}.svg`}
-            width="200px"
-            height="200px"
-            alt={moonPhase}
-          />
-          <h2>{moonPhase}</h2>
           <h2>{data.resolvedAddress}</h2>
 
           <Conditions data={data} />

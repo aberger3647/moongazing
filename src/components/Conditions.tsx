@@ -1,4 +1,4 @@
-import { VisualCrossing } from "../types/visualcrossing";
+import type { VisualCrossing } from "../types/";
 
 interface ConditionsProps {
   data: VisualCrossing;

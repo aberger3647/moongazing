@@ -1,8 +1,37 @@
 const apiKey = import.meta.env.VITE_VISUAL_CROSSING_API_KEY;
-import { VisualCrossing } from "../types/visualcrossing";
+import type { VisualCrossing } from "../types";
 
-export async function getConditions(location: string | FormDataEntryValue | null): Promise<VisualCrossing> {
-  const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}/?key=${apiKey}`;
+interface GetConditionsParams {
+  location: string | FormDataEntryValue | null;
+  date?: string; // format: YYYY-MM-DD
+  include?: string; // eg "days, hours, alerts"
+  elements?: string; // eg "moonphase, sunrise, sunset, temp, humidity"
+  unitGroup?: "metric" | "us";
+}
+
+export async function getConditions({
+  location,
+  date,
+  include,
+  elements,
+  unitGroup = "us",
+}: GetConditionsParams): Promise<VisualCrossing> {
+  if (!location) {
+    throw new Error("Location is required to fetch conditions.");
+  }
+
+  const datePath = date ? `/${date}` : "";
+
+  const params = new URLSearchParams({
+    key: apiKey,
+    unitGroup,
+    contentType: "json",
+  });
+
+  if (include) params.append("include", include);
+  if (elements) params.append("elements", elements);
+
+  const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}${datePath}?${params.toString()}`;
 
   try {
     const response = await fetch(url);
@@ -10,7 +39,7 @@ export async function getConditions(location: string | FormDataEntryValue | null
       throw new Error(`HTTP error. Status: ${response.status}`);
     }
     const data = await response.json();
-    console.log("data: ", data)
+
     return data;
   } catch (error) {
     console.error("There was a problem fetching the data: ", error);
