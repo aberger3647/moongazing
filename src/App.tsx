@@ -47,15 +47,29 @@ import "./App.css";
 // export default App;
 
 import { Home } from "./Home";
+import { Outlet } from "react-router-dom";
 import { NotFound } from "./NotFound";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+const Layout = () => {
+  return (
+    <div className="min-h-screen w-full bg-gradient-to-b from-indigo-950 to-indigo-600 text-white">
+      <Outlet />
+    </div>
+  );
+};
 
 function App() {
   const router = createBrowserRouter([
     {
-      path: "/",
-      element: <Home />,
+      element: <Layout />,
       errorElement: <NotFound />,
+      children: [
+        {
+          path: "/",
+          element: <Home />,
+        },
+      ],
     },
   ]);
 
