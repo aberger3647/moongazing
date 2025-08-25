@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import type { Place } from "../types/Place";
 
 interface PlacesProps {
@@ -43,10 +42,13 @@ export const Places = ({ location, places }: PlacesProps) => {
         ))} */}
 
         <ul>
-        {places.map((place: Place) => (
-          <li key={place.place_name}>{place.place_name}</li>
-        ))}
-      </ul>
+          {places.map((place: Place) => (
+            <li key={place.id} className="place-item">
+              <strong>{place.place_name}</strong>
+
+            </li>
+          ))}
+        </ul>
       </div>
     </>
   );
