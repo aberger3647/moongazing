@@ -3,12 +3,21 @@ import type { MoonPhase, VisualCrossing } from "./types";
 import { getConditions, determineMoonPhase } from "./utils";
 import { useState, useEffect } from "react";
 
-export const Home = () => {
-  const [data, setData] = useState<VisualCrossing | null>(null);
+interface HomeProps {
+  location: string | null;
+  setLocation: (loc: string) => void;
+}
+
+import { usePlaces } from "./hooks/usePlaces";
+
+export const Home = ({ location, setLocation }: HomeProps) => {
+  const { places, loading: placesLoading, error: placesError } = usePlaces(location);
+  const [conditions, setConditions] = useState<VisualCrossing | null>(null);
   const [loading, setLoading] = useState(false);
   const [moonPhase, setMoonPhase] = useState<MoonPhase>("Full Moon");
   // const [userCoords, setUserCoords] = useState("0,0");
 
+  // getting moon phase only
   useEffect(() => {
     const fetchMoonPhase = async () => {
       try {
@@ -29,33 +38,24 @@ export const Home = () => {
     fetchMoonPhase();
   }, []);
 
-  useEffect(() => {
-    if (moonPhase) {
-      console.log("moon phase updated:", moonPhase);
-    }
-  }, [moonPhase]);
-
+  // when user submits location, set location in state, get conditions for that location
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    let location = formData.get("location");
-
-    setLoading(true);
-    try {
-      const conditions = await getConditions({ location: location });
-
-      if (conditions && conditions.resolvedAddress) {
-        setData(conditions);
-
-        // const currentCoords = `${conditions.latitude},${conditions.longitude}`;
-        // setUserCoords(currentCoords);
-
-        console.log("conditions:", conditions);
+    const loc = formData.get("location");
+    if (typeof loc === "string" && loc.trim() !== "") {
+      setLocation(loc);
+      setLoading(true);
+      try {
+        const fetchedConditions = await getConditions({ location: loc });
+        if (fetchedConditions && fetchedConditions.resolvedAddress) {
+          setConditions(fetchedConditions);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -73,14 +73,17 @@ export const Home = () => {
       </form>
       {loading ? (
         <p>Loading...</p>
-      ) : data ? (
+      ) : conditions && location ? (
         <>
-          <h2>{data.resolvedAddress}</h2>
-
-          <Conditions data={data} />
-          <Places location={data.resolvedAddress} />
-          <Alerts location={data.resolvedAddress} />
+          <h2>{conditions.resolvedAddress}</h2>
+          <Conditions data={conditions} />
+          <Places location={conditions.resolvedAddress} places={places} />
+          <Alerts location={conditions.resolvedAddress} />
         </>
+      ) : placesLoading ? (
+        <p>Loading places...</p>
+      ) : placesError ? (
+        <p>Error loading places: {placesError}</p>
       ) : null}
     </main>
   );

@@ -1,8 +1,14 @@
 import { useState } from "react";
 
-export const Places = ({ location }: { location: string }) => {
+import type { Place } from "../types/Place";
+
+interface PlacesProps {
+  location: string;
+  places: Place[];
+}
+
+export const Places = ({ location, places }: PlacesProps) => {
   const [selectedMiles, setSelectedMiles] = useState("100");
-  console.log(selectedMiles);
 
   return (
     <>
@@ -35,6 +41,12 @@ export const Places = ({ location }: { location: string }) => {
             <hr />
           </>
         ))} */}
+
+        <ul>
+        {places.map((place: Place) => (
+          <li key={place.place_name}>{place.place_name}</li>
+        ))}
+      </ul>
       </div>
     </>
   );
