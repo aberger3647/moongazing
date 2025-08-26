@@ -1,6 +1,6 @@
 import { Conditions, Alerts, Places, Moon } from "./components";
 import type { MoonPhase, VisualCrossing } from "./types";
-import { getConditions, determineMoonPhase } from "./utils";
+import { getConditions, determineMoonPhase, getMoonPhase } from "./utils";
 import { useState, useEffect } from "react";
 
 interface HomeProps {
@@ -11,22 +11,27 @@ interface HomeProps {
 import { usePlaces } from "./hooks/usePlaces";
 
 export const Home = ({ location, setLocation }: HomeProps) => {
-  const { places, loading: placesLoading, error: placesError } = usePlaces(location);
+  const {
+    places,
+    loading: placesLoading,
+    error: placesError,
+  } = usePlaces(location);
   const [conditions, setConditions] = useState<VisualCrossing | null>(null);
   const [loading, setLoading] = useState(false);
   const [moonPhase, setMoonPhase] = useState<MoonPhase>("Full Moon");
-  // const [userCoords, setUserCoords] = useState("0,0");
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLon, setUserLon] = useState<number | null>(null);
 
-  // getting moon phase only
+  // get austin moon phase
   useEffect(() => {
     const fetchMoonPhase = async () => {
       try {
-        const conditions = await getConditions({ location: "Austin, TX" });
-        if (conditions?.days?.length > 0) {
-          const currentMoonPhase = determineMoonPhase(
-            conditions.days[0].moonphase
-          );
+        const moonVal = await getMoonPhase("Austin, TX");
+        if (typeof moonVal === "number") {
+          const currentMoonPhase = determineMoonPhase(moonVal);
           setMoonPhase(currentMoonPhase);
+        } else {
+          console.log("Initial fetch returned no moonphase value");
         }
       } catch (error) {
         console.error("Error fetching initial data:", error);
@@ -38,18 +43,21 @@ export const Home = ({ location, setLocation }: HomeProps) => {
     fetchMoonPhase();
   }, []);
 
-  // when user submits location, set location in state, get conditions for that location
+  // when user submits location, set lat/long in state & get conditions
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const loc = formData.get("location");
-    if (typeof loc === "string" && loc.trim() !== "") {
-      setLocation(loc);
+    const formLocation = formData.get("location");
+    if (typeof formLocation === "string" && formLocation.trim() !== "") {
       setLoading(true);
       try {
-        const fetchedConditions = await getConditions({ location: loc });
+        const fetchedConditions = await getConditions({ location: formLocation });
+        console.log("Fetched conditions for", formLocation, fetchedConditions);
         if (fetchedConditions && fetchedConditions.resolvedAddress) {
           setConditions(fetchedConditions);
+          setLocation(fetchedConditions.resolvedAddress);
+          setUserLat(fetchedConditions.latitude);
+          setUserLon(fetchedConditions.longitude);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
