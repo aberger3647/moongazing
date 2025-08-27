@@ -11,16 +11,20 @@ interface HomeProps {
 import { usePlaces } from "./hooks/usePlaces";
 
 export const Home = ({ location, setLocation }: HomeProps) => {
-  const {
-    places,
-    loading: placesLoading,
-    error: placesError,
-  } = usePlaces(location);
   const [conditions, setConditions] = useState<VisualCrossing | null>(null);
   const [loading, setLoading] = useState(false);
   const [moonPhase, setMoonPhase] = useState<MoonPhase>("Full Moon");
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLon, setUserLon] = useState<number | null>(null);
+
+  const userLocation =
+    userLat !== null && userLon !== null ? { lat: userLat, lng: userLon } : null;
+
+  const {
+    places,
+    loading: placesLoading,
+    error: placesError,
+  } = usePlaces(userLocation);
 
   // get austin moon phase
   useEffect(() => {

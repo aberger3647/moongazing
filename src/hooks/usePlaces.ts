@@ -1,30 +1,74 @@
 import { useEffect, useState } from "react";
-import { supabase } from '../supabaseClient'
+import { supabase } from '../supabaseClient';
 import type { Place } from "../types/Place";
 
+type UserLocation = {
+  lat: number;
+  lng: number;
+};
 
-export function usePlaces(location: string | null) {
+interface UsePlacesOptions {
+  radiusMeters?: number;
+  limit?: number;
+}
+
+export function usePlaces(
+  location: UserLocation | null,
+  options: UsePlacesOptions = {}
+) {
+  const { radiusMeters = 5000, limit = 10 } = options;
+
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!location) return;
+    if (!location) {
+      setPlaces([]);
+      return; // exit early if location is null
+    }
+
+    const { lat, lng } = location; // destructure safely
+
     setLoading(true);
+    setError(null);
+
     async function getPlaces() {
-      const { data, error } = await supabase.from("places").select("*");
+      const query = `
+        SELECT
+          id,
+          place_name,
+          category,
+          lat,
+          lng,
+          ST_Distance(
+            location,
+            ST_MakePoint(${lng}, ${lat})::geography
+          ) AS distance
+        FROM places
+        WHERE ST_DWithin(
+          location,
+          ST_MakePoint(${lng}, ${lat})::geography,
+          ${radiusMeters}
+        )
+        ORDER BY distance
+        LIMIT ${limit};
+      `;
+
+      const { data, error } = await supabase.rpc('sql', { sql: query });
+
       if (error) {
         setError(error.message);
-        setLoading(false);
-        return;
+        setPlaces([]);
+      } else {
+        setPlaces(data || []);
       }
-      if (data) {
-        setPlaces(data);
-      }
+
       setLoading(false);
     }
+
     getPlaces();
-  }, [location]);
+  }, [location, radiusMeters, limit]);
 
   return { places, loading, error };
 }
