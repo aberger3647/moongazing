@@ -49,6 +49,8 @@ export const Places = ({ location, places }: PlacesProps) => {
             </li>
           ))}
         </ul>
+
+        {places.length === 0 && <p>No places found.</p>}
       </div>
     </>
   );

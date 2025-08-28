@@ -18,13 +18,14 @@ Deno.serve(async (req) => {
   }
 
 try {
-    const { lat, lng, radiusMeters = 5000, limit = 10 } = await req.json();
+    const { lat, lng, radius = 5000, limit = 10 } = await req.json();
 
-    // Call the updated Postgres function with renamed parameters
+    console.log("Edge Function received:", { lat, lng, radius, limit });
+
     const { data, error } = await supabase.rpc('get_places', {
       p_lat: lat,
       p_lng: lng,
-      p_radius_meters: radiusMeters,
+      p_radius: radius,
       p_limit_rows: limit
     });
 

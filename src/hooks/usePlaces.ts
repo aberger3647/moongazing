@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
-import { supabase } from '../supabaseClient';
 import type { Place } from "../types/Place";
 
-type UserLocation = {
+interface UserLocation {
   lat: number;
   lng: number;
-};
+}
 
 interface UsePlacesOptions {
-  radiusMeters?: number;
+  radius?: number; 
   limit?: number;
 }
 
@@ -16,7 +15,7 @@ export function usePlaces(
   location: UserLocation | null,
   options: UsePlacesOptions = {}
 ) {
-  const { radiusMeters = 5000, limit = 10 } = options;
+  const { radius = 50, limit = 10 } = options;
 
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
@@ -25,50 +24,45 @@ export function usePlaces(
   useEffect(() => {
     if (!location) {
       setPlaces([]);
-      return; // exit early if location is null
+      return;
     }
 
-    const { lat, lng } = location; // destructure safely
+    const { lat, lng } = location;
 
-    setLoading(true);
-    setError(null);
+    async function fetchPlaces() {
+      setLoading(true);
+      setError(null);
 
-    async function getPlaces() {
-      const query = `
-        SELECT
-          id,
-          place_name,
-          category,
-          lat,
-          lng,
-          ST_Distance(
-            location,
-            ST_MakePoint(${lng}, ${lat})::geography
-          ) AS distance
-        FROM places
-        WHERE ST_DWithin(
-          location,
-          ST_MakePoint(${lng}, ${lat})::geography,
-          ${radiusMeters}
-        )
-        ORDER BY distance
-        LIMIT ${limit};
-      `;
+      try {
+        const res = await fetch(
+          "https://wbvreyzoqdqtcanrslhw.functions.supabase.co/get-places",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lat, lng, radius, limit }),
+          }
+        );
 
-      const { data, error } = await supabase.rpc('sql', { sql: query });
+        const json = await res.json();
 
-      if (error) {
-        setError(error.message);
+        console.log("Edge Function response:", json);
+        
+        if (res.ok) {
+          setPlaces(json.data || []);
+        } else {
+          setError(json.error?.message || "Unknown error");
+          setPlaces([]);
+        }
+      } catch (err: any) {
+        setError(err.message);
         setPlaces([]);
-      } else {
-        setPlaces(data || []);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     }
 
-    getPlaces();
-  }, [location, radiusMeters, limit]);
+    fetchPlaces();
+  }, [location?.lat, location?.lng, radius, limit]);
 
   return { places, loading, error };
 }
