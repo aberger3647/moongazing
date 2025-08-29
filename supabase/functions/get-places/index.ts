@@ -11,14 +11,14 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-
+ 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { status: 200, headers: corsHeaders });
   }
 
 try {
-    const { lat, lng, radius = 5000, limit = 10 } = await req.json();
+    const { lat, lng, radius = 80000, limit = 10 } = await req.json();
 
     console.log("Edge Function received:", { lat, lng, radius, limit });
 

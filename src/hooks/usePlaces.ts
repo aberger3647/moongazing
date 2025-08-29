@@ -7,7 +7,7 @@ interface UserLocation {
 }
 
 interface UsePlacesOptions {
-  radius?: number; 
+  radius?: number; // in meters
   limit?: number;
 }
 
@@ -15,7 +15,7 @@ export function usePlaces(
   location: UserLocation | null,
   options: UsePlacesOptions = {}
 ) {
-  const { radius = 50, limit = 10 } = options;
+  const { radius = 80000, limit = 10 } = options;
 
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
