@@ -38,7 +38,7 @@ export function usePlaces(
           "https://wbvreyzoqdqtcanrslhw.functions.supabase.co/get-places",
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json",  "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,  },
             body: JSON.stringify({ lat, lng, radius, limit }),
           }
         );
@@ -46,7 +46,7 @@ export function usePlaces(
         const json = await res.json();
 
         console.log("Edge Function response:", json);
-        
+
         if (res.ok) {
           setPlaces(json.data || []);
         } else {
