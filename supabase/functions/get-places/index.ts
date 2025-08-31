@@ -1,4 +1,3 @@
-// supabase/functions/get-places/index.ts
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.2";
 
@@ -29,15 +28,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Read raw request body
     const bodyText = await req.text();
-    console.log("[Edge] Raw request body:", bodyText);
 
     let payload;
     try {
       payload = JSON.parse(bodyText);
     } catch (err) {
-      console.error("[Edge] JSON parse error:", err);
       return new Response(
         JSON.stringify({ error: { message: "Invalid JSON body", raw: bodyText } }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -45,7 +41,6 @@ Deno.serve(async (req) => {
     }
 
     const { lat, lng, radius = 482803, limit = 10 } = payload || {};
-    console.log("Edge Function received:", { lat, lng, radius, limit });
 
     const { data, error } = await supabase.rpc('get_places', {
       p_lat: lat,
@@ -55,7 +50,6 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      console.error("[Edge] RPC error:", error);
       return new Response(JSON.stringify({ error: { message: error.message } }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -63,7 +57,6 @@ Deno.serve(async (req) => {
     }
 
     const places = data as PlaceWithDistance[];
-    console.log("[Edge] RPC returned", places?.length ?? 0, "rows");
 
     return new Response(JSON.stringify({ data: places }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
