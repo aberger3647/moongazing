@@ -16,17 +16,16 @@ export const Home = ({ location, setLocation }: HomeProps) => {
   const [moonPhase, setMoonPhase] = useState<MoonPhase>("Full Moon");
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLon, setUserLon] = useState<number | null>(null);
+  const [radius, setRadius] = useState<number>(482803);
 
   const userLocation =
     userLat !== null && userLon !== null ? { lat: userLat, lng: userLon } : null;
-
-console.log("user submitted location ", userLocation);
 
   const {
     places,
     loading: placesLoading,
     error: placesError,
-  } = usePlaces(userLocation);
+  } = usePlaces(userLocation, {radius});
 
   // get austin moon phase
   useEffect(() => {
@@ -55,8 +54,6 @@ console.log("user submitted location ", userLocation);
     const formData = new FormData(e.currentTarget);
     const formLocation = formData.get("location");
     if (typeof formLocation === "string" && formLocation.trim() !== "") {
-      console.log("Form submitted with location:", formLocation);
-
       setLoading(true);
       try {
         const fetchedConditions = await getConditions({ location: formLocation });
@@ -67,10 +64,6 @@ console.log("user submitted location ", userLocation);
           setUserLat(fetchedConditions.latitude);
           setUserLon(fetchedConditions.longitude);
         }
-        console.log("Setting userLocation:", {
-          lat: fetchedConditions.latitude,
-          lng: fetchedConditions.longitude,
-        });
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -97,7 +90,7 @@ console.log("user submitted location ", userLocation);
         <>
           <h2>{conditions.resolvedAddress}</h2>
           <Conditions data={conditions} />
-          <Places location={conditions.resolvedAddress} places={places} />
+          <Places location={conditions.resolvedAddress} places={places} radius={radius} setRadius={setRadius} />
           <Alerts location={conditions.resolvedAddress} />
         </>
       ) : placesLoading ? (
