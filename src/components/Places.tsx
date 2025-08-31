@@ -1,4 +1,4 @@
-import { useState } from "react";
+// import { useState } from "react";
 import type { Place } from "../types/Place";
 
 interface PlacesProps {
@@ -7,15 +7,15 @@ interface PlacesProps {
 }
 
 export const Places = ({ location, places }: PlacesProps) => {
-  const [selectedMiles, setSelectedMiles] = useState("100");
+  // const [selectedMiles, setSelectedMiles] = useState("100");
 
   return (
     <>
       <h2>Dark Sky Places</h2>
-      <p>
+     <p>
         Within{" "}
         <span>
-          <select
+          {/*  <select
             onChange={(e) => setSelectedMiles(e.target.value)}
             defaultValue={50}
           >
@@ -24,10 +24,10 @@ export const Places = ({ location, places }: PlacesProps) => {
             <option value="100">100</option>
             <option value="500">500</option>
             <option value="1000">1000</option>
-          </select>
+          </select>*/}
         </span>{" "}
         miles of <span>{location}</span>
-      </p>
+      </p> 
 
       <div className="places">
         {/* {nearbyPlaces.map((place, index) => (

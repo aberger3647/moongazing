@@ -20,6 +20,8 @@ export const Home = ({ location, setLocation }: HomeProps) => {
   const userLocation =
     userLat !== null && userLon !== null ? { lat: userLat, lng: userLon } : null;
 
+console.log("user submitted location ", userLocation);
+
   const {
     places,
     loading: placesLoading,
@@ -53,16 +55,22 @@ export const Home = ({ location, setLocation }: HomeProps) => {
     const formData = new FormData(e.currentTarget);
     const formLocation = formData.get("location");
     if (typeof formLocation === "string" && formLocation.trim() !== "") {
+      console.log("Form submitted with location:", formLocation);
+
       setLoading(true);
       try {
         const fetchedConditions = await getConditions({ location: formLocation });
-        console.log("Fetched conditions for", formLocation, fetchedConditions);
+ console.log("Fetched conditions:", fetchedConditions);
         if (fetchedConditions && fetchedConditions.resolvedAddress) {
           setConditions(fetchedConditions);
           setLocation(fetchedConditions.resolvedAddress);
           setUserLat(fetchedConditions.latitude);
           setUserLon(fetchedConditions.longitude);
         }
+        console.log("Setting userLocation:", {
+          lat: fetchedConditions.latitude,
+          lng: fetchedConditions.longitude,
+        });
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -80,7 +88,7 @@ export const Home = ({ location, setLocation }: HomeProps) => {
 
       <form onSubmit={onSubmit}>
         <label htmlFor="location">Enter location</label>
-        <input name="location" id="location" placeholder="city"></input>
+        <input name="location" id="location" placeholder="city" className="text-black"></input>
         <button type="submit">Submit</button>
       </form>
       {loading ? (

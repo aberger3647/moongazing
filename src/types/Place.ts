@@ -1,6 +1,8 @@
 export interface Place {
-  place_name: string;
   id: number;
-  category?: string;
-  coords?: string; // raw coords string if present
+  place_name: string;
+  category: string;
+  lat: number;        // add this
+  lng: number;        // add this
+  distance?: number;  // optional, only from RPC
 }

@@ -15,7 +15,7 @@ export function usePlaces(
   location: UserLocation | null,
   options: UsePlacesOptions = {}
 ) {
-  const { radius = 80000, limit = 10 } = options;
+  const { radius = 482803, limit = 10 } = options;
 
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
@@ -23,17 +23,26 @@ export function usePlaces(
 
   useEffect(() => {
     if (!location) {
+      console.log("usePlaces: no location provided yet");
       setPlaces([]);
       return;
     }
 
     const { lat, lng } = location;
+     console.log("usePlaces: fetching places for:", { lat, lng, radius, limit });
 
     async function fetchPlaces() {
       setLoading(true);
       setError(null);
 
       try {
+        console.log("Payload I’m sending:", JSON.stringify({ lat, lng, radius, limit }));
+console.log("Fetch options:", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ lat, lng, radius, limit })
+});
+
         const res = await fetch(
           "https://wbvreyzoqdqtcanrslhw.functions.supabase.co/get-places",
           {
@@ -44,16 +53,25 @@ export function usePlaces(
         );
 
         const json = await res.json();
-
-        console.log("Edge Function response:", json);
-
+        console.log("usePlaces json response: ", json);
+        
         if (res.ok) {
-          setPlaces(json.data || []);
-        } else {
-          setError(json.error?.message || "Unknown error");
+        if (json.data) {
+          setPlaces(json.data);
+          console.log("usePlaces: places returned:", (json.data as Place[])?.map((d: Place) => ({
+       place_name: d.place_name,
+       lat: d.lat,
+       lng: d.lng,
+       distance: d.distance,
+     })));
+        } else    {
+          console.warn("usePlaces: no places in response");
           setPlaces([]);
         }
+
+        }
       } catch (err: any) {
+        console.error("usePlaces fetch error:", err);
         setError(err.message);
         setPlaces([]);
       } finally {
