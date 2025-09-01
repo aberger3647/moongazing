@@ -15,7 +15,7 @@ export function usePlaces(
   location: UserLocation | null,
   options: UsePlacesOptions = {}
 ) {
-  const { radius = 482803, limit = 10 } = options;
+  const { radius = 160934, limit = 5 } = options;
 
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);

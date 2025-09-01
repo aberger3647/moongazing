@@ -1,7 +1,7 @@
 export const Alerts = ({ location }: { location: string }) => {
   return (
     <>
-      <h2 className="font-herculanum text-3xl m-3">Email Alerts</h2>
+      <h2 className="font-herculanum text-3xl mb-3">Email Alerts</h2>
       <div className="flex flex-col items-center space-y-4">
       <p className="text-center">Email me when moon-gazing conditions are optimal for {location}:</p>
       <form className="flex flex-col space-y-4 items-center">

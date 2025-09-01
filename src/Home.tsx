@@ -88,7 +88,7 @@ export const Home = ({ location, setLocation }: HomeProps) => {
         <p>Loading...</p>
       ) : conditions && location ? (
         <>
-          <h2 className="font-herculanum text-4xl mb-4">{conditions.resolvedAddress}</h2>
+          <h2 className="font-herculanum text-4xl mb-4 text-center">{conditions.resolvedAddress}</h2>
           <Conditions data={conditions} />
           <Places location={conditions.resolvedAddress} places={places} radius={radius} setRadius={setRadius} />
           <Alerts location={conditions.resolvedAddress} />
