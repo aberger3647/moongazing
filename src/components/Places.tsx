@@ -1,5 +1,6 @@
 import type { Place } from "../types/Place";
 import type { Dispatch, SetStateAction } from "react";
+import { toMiles } from "../utils";
 
 interface PlacesProps {
   location: string;
@@ -14,6 +15,7 @@ export const Places = ({
   radius,
   setRadius,
 }: PlacesProps) => {
+
   return (
     <>
       <h2 className="font-herculanum text-3xl mb-5">Dark Sky Places</h2>
@@ -58,7 +60,7 @@ export const Places = ({
                 </p>
                 <p className="text-center text-lg font-thin">
                   {place.distance !== undefined
-                    ? `${Math.floor(place.distance)} m away`
+                    ? `${toMiles(place.distance, "m")} miles away`
                     : "Distance unknown"}
                 </p>
               </div>
