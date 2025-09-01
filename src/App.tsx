@@ -7,7 +7,7 @@ import "./App.css";
 
 const Layout = () => {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-indigo-950 to-indigo-600 text-white">
+    <div className="min-h-screen w-full bg-gradient-to-b from-indigo-950 to-indigo-600 bg-fixed text-white">
       <Outlet />
     </div>
   );

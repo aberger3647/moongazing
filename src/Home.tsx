@@ -73,22 +73,22 @@ export const Home = ({ location, setLocation }: HomeProps) => {
   };
 
   return (
-    <main>
-      <h1>Moongaz.ing</h1>
+    <main className="flex flex-col items-center p-5">
+      <h1 className="font-herculanum text-5xl">Moongaz.ing</h1>
 
-      <Moon size={100} phase={moonPhase} />
-      <h2>{moonPhase}</h2>
+      <Moon size={250} phase={moonPhase} className="my-6"/>
+      <h2 className="font-herculanum text-3xl">{moonPhase}</h2>
 
-      <form onSubmit={onSubmit}>
-        <label htmlFor="location">Enter location</label>
-        <input name="location" id="location" placeholder="city" className="text-black"></input>
-        <button type="submit">Submit</button>
+      <form onSubmit={onSubmit} className="flex flex-col space-y-4 items-center my-6">
+        <label htmlFor="location" className="font-herculanum text-xl">Enter Location:</label>
+        <input name="location" id="location" placeholder="City" className="text-indigo-950 py-2 px-4 bg-indigo-100 rounded-xl capitalize"></input>
+        <button type="submit" className="font-herculanum text-xl bg-yellow-50 text-indigo-800 py-2 px-4 w-28 rounded-full">Submit</button>
       </form>
       {loading ? (
         <p>Loading...</p>
       ) : conditions && location ? (
         <>
-          <h2>{conditions.resolvedAddress}</h2>
+          <h2 className="font-herculanum text-4xl mb-4">{conditions.resolvedAddress}</h2>
           <Conditions data={conditions} />
           <Places location={conditions.resolvedAddress} places={places} radius={radius} setRadius={setRadius} />
           <Alerts location={conditions.resolvedAddress} />

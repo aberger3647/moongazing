@@ -11,13 +11,14 @@ interface PlacesProps {
 export const Places = ({ location, places, radius, setRadius }: PlacesProps) => {
   return (
     <>
-      <h2>Dark Sky Places</h2>
-     <p>
+      <h2 className="font-herculanum text-3xl mb-5">Dark Sky Places</h2>
+     <p className="mb-5 text-lg">
         Within{" "}
         <span>
            <select
             onChange={(e) => setRadius(Number(e.target.value))}
             defaultValue={radius}
+              className="text-indigo-950 py-2 px-3 bg-indigo-100 rounded-xl"
           >
             <option value="160934">100</option>
             <option value="482803">300</option>
@@ -25,25 +26,25 @@ export const Places = ({ location, places, radius, setRadius }: PlacesProps) => 
             <option value="1609344">1000</option>
           </select>
         </span>{" "}
-        miles of <span>{location}</span>
+        miles of <span>{location}:</span>
       </p> 
 
-    <div className="places">
+    <div className="places mb-6 flex flex-col items-center max-w-96">
   {places.length === 0 ? (
     <p>No places found within this radius.</p>
   ) : (
     places.map((place) => (
-      <div className="place-wrapper" key={place.id}>
-        <div className="place">
-          <p>{place.place_name}</p>
-          <p>{place.category}</p>
-          <p>
+      <div className="place-wrapper m-3" key={place.id}>
+        <div className="place flex flex-col space-y-2">
+          <p className="text-center text-2xl font-bold">{place.place_name}</p>
+          <p className="text-center text-xl font-medium">{place.category}</p>
+          <p className="text-center text-lg font-thin">
             {place.distance !== undefined
               ? `${Math.floor(place.distance)} m away`
               : "Distance unknown"}
           </p>
         </div>
-        <hr />
+        <hr className="border-indigo-300 mt-4 w-24 mx-auto"/>
       </div>
     ))
   )}
