@@ -3,21 +3,12 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[build.environment]
+  # Let Netlify’s secrets scanner ignore safe keys
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_ANON_KEY,VITE_SUPABASE_URL"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
   force = true
-[build]
-  # The command Netlify runs to build your Vite app
-  command = "npm run build"
-
-  # The directory where Vite outputs the built site
-  publish = "dist"
-
-  # Tell Netlify where your functions are located
-  functions = "netlify/functions"
-
-[build.environment]
-  # Let Netlify’s secrets scanner ignore safe keys 
-  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_ANON_KEY,VITE_SUPABASE_URL"
