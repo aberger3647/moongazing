@@ -77,7 +77,6 @@ export const Home = ({ location, setLocation }: HomeProps) => {
     <main className="flex flex-col items-center p-5">
       <h1 className="font-herculanum text-5xl">Moongaz.ing</h1>
 
-      {/* <Moon size={250} phase={moonPhase} className="my-6"/> */}
      {moonPhase && (
         <>
           <img
@@ -85,6 +84,7 @@ export const Home = ({ location, setLocation }: HomeProps) => {
             alt={moonPhase}
             width={256}
             height={256}
+            className="my-6"
           />
         </>
       )}
