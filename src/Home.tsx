@@ -1,6 +1,6 @@
-import { Conditions, Alerts, Places, Moon } from "./components";
+import { Conditions, Alerts, Places } from "./components";
 import type { MoonPhase, VisualCrossing } from "./types";
-import { determineMoonPhase, getMoonPhase, getConditions } from "./utils";
+import { determineMoonPhase, getMoonPhase, getConditions, setFavicon, moonSvgs } from "./utils";
 import { useState, useEffect } from "react";
 
 interface HomeProps {
@@ -35,6 +35,7 @@ export const Home = ({ location, setLocation }: HomeProps) => {
         if (typeof moonVal === "number") {
           const currentMoonPhase = determineMoonPhase(moonVal);
           setMoonPhase(currentMoonPhase);
+          setFavicon(currentMoonPhase);
         } else {
           console.log("Initial fetch returned no moonphase value");
         }
@@ -76,7 +77,17 @@ export const Home = ({ location, setLocation }: HomeProps) => {
     <main className="flex flex-col items-center p-5">
       <h1 className="font-herculanum text-5xl">Moongaz.ing</h1>
 
-      <Moon size={250} phase={moonPhase} className="my-6"/>
+      {/* <Moon size={250} phase={moonPhase} className="my-6"/> */}
+     {moonPhase && (
+        <>
+          <img
+            src={moonSvgs[moonPhase]}
+            alt={moonPhase}
+            width={256}
+            height={256}
+          />
+        </>
+      )}
       <h2 className="font-herculanum text-3xl">{moonPhase}</h2>
 
       <form onSubmit={onSubmit} className="flex flex-col space-y-4 items-center my-6">

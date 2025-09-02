@@ -19,6 +19,9 @@ export const determineMoonPhase = (value: number): MoonPhase => {
   if (value > 0.5 && value < 0.75) {
     return "Waning Gibbous";
   }
+    if (value === 0.75) {
+    return "Last Quarter";
+  }
   if (value > 0.75 && value < 1) {
     return "Waning Crescent";
   }
