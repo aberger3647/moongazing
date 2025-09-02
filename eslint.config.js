@@ -35,4 +35,18 @@ export default [
       ],
     },
   },
+    {
+    files: ['netlify/functions/**/*.{js,ts}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.node, // <-- Node globals (process, Buffer, etc.)
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    rules: {
+      // optionally override any browser-only rules
+    },
+  },
 ]

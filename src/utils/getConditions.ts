@@ -1,4 +1,3 @@
-const apiKey = import.meta.env.VITE_VISUAL_CROSSING_API_KEY;
 import type { VisualCrossing } from "../types";
 
 interface GetConditionsParams {
@@ -16,33 +15,34 @@ export async function getConditions({
   elements,
   unitGroup = "us",
 }: GetConditionsParams): Promise<VisualCrossing> {
-  if (!location) {
-    throw new Error("Location is required to fetch conditions.");
-  }
+  if (!location) throw new Error("Location is required");
 
-  const datePath = date ? `/${date}` : "";
-
-  const params = new URLSearchParams({
-    key: apiKey,
-    unitGroup,
-    contentType: "json",
+  const res = await fetch("/api/getConditions", {
+    method: "POST",
+    body: JSON.stringify({ location, date, include, elements, unitGroup }),
+    headers: { "Content-Type": "application/json" },
   });
 
-  if (include) params.append("include", include);
-  if (elements) params.append("elements", elements);
+  const text = await res.text();
 
-  const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}${datePath}?${params.toString()}`;
+  if (!res.ok) {
+    try {
+      const errorData = JSON.parse(text);
+      throw new Error(errorData.error || `HTTP error: ${res.status}`);
+    } catch {
+      throw new Error(`HTTP error: ${res.status} - ${text}`);
+    }
+  }
+
+  if (!text) {
+    throw new Error("Empty response from server");
+  }
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP error. Status: ${response.status}`);
-    }
-    const data = await response.json();
-
+    const data = JSON.parse(text);
     return data;
-  } catch (error) {
-    console.error("There was a problem fetching the data: ", error);
-    throw error;
+  } catch (err) {
+    console.error("Failed to parse JSON:", text);
+    throw new Error("Invalid JSON response");
   }
 }

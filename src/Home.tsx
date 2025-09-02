@@ -1,6 +1,6 @@
 import { Conditions, Alerts, Places, Moon } from "./components";
 import type { MoonPhase, VisualCrossing } from "./types";
-import { getConditions, determineMoonPhase, getMoonPhase } from "./utils";
+import { determineMoonPhase, getMoonPhase, getConditions } from "./utils";
 import { useState, useEffect } from "react";
 
 interface HomeProps {
