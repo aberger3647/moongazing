@@ -7,9 +7,13 @@ import "./App.css";
 
 const Layout = () => {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-indigo-950 to-indigo-600 bg-fixed text-white">
-      <Outlet />
-    </div>
+<div className="relative min-h-screen w-full text-white">
+  <div className="fixed inset-0 -z-10 bg-gradient-to-b from-indigo-950 to-indigo-600" />
+  <div className="relative z-10">
+    <Outlet />
+  </div>
+</div>
+
   );
 };
 
