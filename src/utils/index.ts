@@ -5,3 +5,4 @@ export { toMiles } from "./toMiles";
 export { getConditions } from "./getConditions";
 export { setFavicon } from "./setFavicon";
 export { moonSvgs } from "./moonSvgs";
+export { sendEmail } from "./emailService";
