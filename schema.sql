@@ -7,10 +7,13 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Create places table
 CREATE TABLE IF NOT EXISTS places (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   lat DECIMAL(10, 8) NOT NULL,
   lng DECIMAL(11, 8) NOT NULL,
   place_name TEXT NOT NULL,
+  category TEXT,
+  coords TEXT,
+  location TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(lat, lng)
 );
@@ -19,9 +22,10 @@ CREATE TABLE IF NOT EXISTS places (
 CREATE TABLE IF NOT EXISTS alerts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  place_id UUID NOT NULL REFERENCES places(id) ON DELETE CASCADE,
+  place_id BIGINT NOT NULL REFERENCES places(id) ON DELETE CASCADE,
   last_notified TIMESTAMP WITH TIME ZONE,
   active BOOLEAN DEFAULT TRUE,
+  unsubscribe_token UUID DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id, place_id)
 );

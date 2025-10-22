@@ -42,29 +42,18 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
       }
 
       // Get or create place
-      const { data: existingPlace } = await supabase
+      const { data: placeData, error: placeError } = await supabase
         .from("places")
+        .upsert({
+          lat,
+          lng,
+          place_name: location
+        }, { onConflict: ['lat', 'lng'] })
         .select("id")
-        .eq("lat", lat)
-        .eq("lng", lng)
         .single();
 
-      let placeId = existingPlace?.id;
-
-      if (!placeId) {
-        const { data: newPlace, error: placeError } = await supabase
-          .from("places")
-          .insert({
-            lat,
-            lng,
-            place_name: location
-          })
-          .select("id")
-          .single();
-
-        if (placeError) throw placeError;
-        placeId = newPlace.id;
-      }
+      if (placeError) throw placeError;
+      const placeId = placeData.id;
 
       // Create alert (or update if exists)
       const { error: alertError } = await supabase
