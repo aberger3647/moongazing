@@ -41,28 +41,29 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
         userId = newUser.id;
       }
 
-      // Get or create place
-      const { data: placeData, error: placeError } = await supabase
-        .from("places")
+      // Get or create user location
+      const { data: locationData, error: locationError } = await supabase
+        .from("user_locations")
         .upsert({
+          user_id: userId,
           lat,
           lng,
-          place_name: location
-        }, { onConflict: ['lat', 'lng'] })
+          location_name: location
+        }, { onConflict: ['user_id', 'lat', 'lng'] })
         .select("id")
         .single();
 
-      if (placeError) throw placeError;
-      const placeId = placeData.id;
+      if (locationError) throw locationError;
+      const locationId = locationData.id;
 
       // Create alert (or update if exists)
       const { error: alertError } = await supabase
         .from("alerts")
         .upsert({
           user_id: userId,
-          place_id: placeId,
+          location_id: locationId,
           active: true
-        });
+        }, { onConflict: ['user_id', 'location_id'] });
 
       if (alertError) throw alertError;
 
@@ -82,11 +83,15 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
         setMessage("Subscription confirmed! You'll receive alerts via email.");
         setEmail("");
       } else {
-        setMessage(`Subscription saved, but email failed: ${emailResult.error}`);
+        setMessage("Subscription saved! We'll send you a confirmation email shortly.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error subscribing:", error);
-      setMessage("Error subscribing. Please try again.");
+      if (error.code === '23505' && error.message?.includes('alerts_user_id_location_id_key')) {
+        setMessage("You're already subscribed to alerts for this location.");
+      } else {
+        setMessage("Error subscribing. Please try again.");
+      }
     }
 
     setLoading(false);

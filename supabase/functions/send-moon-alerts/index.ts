@@ -21,10 +21,10 @@ Deno.serve(async (_req) => {
     .select(`
       id,
       user_id,
-      place_id,
+      location_id,
       last_notified,
       users(email),
-      places(lat, lng, place_name)
+      user_locations(lat, lng, location_name)
     `)
     .eq("active", true);
 
@@ -37,27 +37,27 @@ Deno.serve(async (_req) => {
 
   if (!alerts?.length) return new Response("No alerts", { status: 200 });
 
-  interface PlaceRow {
+  interface LocationRow {
     lat?: number;
     lng?: number;
-    place_name?: string;
+    location_name?: string;
   }
   interface UserRow {
     email?: string;
   }
   interface AlertRow {
     id: number | string;
-    places?: PlaceRow;
+    user_locations?: LocationRow;
     users?: UserRow;
   }
 
   for (const alert of alerts as AlertRow[]) {
     try {
-      const place: PlaceRow = alert.places || {};
+      const location: LocationRow = alert.user_locations || {};
       const user: UserRow = alert.users || {};
-      const lat = place.lat;
-      const lng = place.lng;
-      const place_name = place.place_name;
+      const lat = location.lat;
+      const lng = location.lng;
+      const location_name = location.location_name;
 
       if (!lat || !lng || !user?.email) {
         console.warn("Skipping alert due to missing data", { alert });
@@ -101,11 +101,19 @@ const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/s
       const day7Typed = day7 as DayData;
 
       if (
-        (day7Typed.conditions || "").includes("Clear") &&
-        day7Typed.moonphase === 1
+      (day7Typed.conditions || "").includes("Clear") &&
+      day7Typed.moonphase === 1
       ) {
-        // 4. Send email
-        await sendEmail(user.email || "", place_name || "", day7Typed);
+      // 4. Get nearby dark sky places
+      const { data: nearbyPlaces } = await supabase.rpc('get_places', {
+          p_lat: lat,
+          p_lng: lng,
+          p_radius: 50000, // 50km
+          p_limit_rows: 5,
+        });
+
+        // 5. Send email
+        await sendEmail(user.email || "", location_name || "", day7Typed, nearbyPlaces || []);
 
         // 5. Update last_notified
         await supabase
@@ -125,16 +133,25 @@ const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/s
 // Example email sender using Postmark
 async function sendEmail(
   to: string,
-  place: string,
+  location: string,
   dayData: { datetime?: string },
+  nearbyPlaces: any[],
 ) {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   if (!resendApiKey) throw new Error("RESEND_API_KEY not set");
 
   const resent = new Resend(resendApiKey);
 
-  const subject = `Moon Gazing Alert for ${place}`;
-  const htmlBody = `<h1>Optimal Moon Gazing!</h1><p>The full moon will be visible in ${place} on ${dayData.datetime}.</p>`;
+  const subject = `Moon Gazing Alert for ${location}`;
+  let htmlBody = `<h1>Optimal Moon Gazing!</h1><p>The full moon will be visible in ${location} on ${dayData.datetime}.</p>`;
+
+  if (nearbyPlaces.length > 0) {
+    htmlBody += `<h2>Nearby Certified Dark Sky Places:</h2><ul>`;
+    for (const place of nearbyPlaces) {
+      htmlBody += `<li>${place.place_name} (${place.category}) - ${(place.distance / 1000).toFixed(1)} km away</li>`;
+    }
+    htmlBody += `</ul>`;
+  }
 
   const { data, error } = await resent.emails.send({
     from: "Moon Alerts <alerts@alerts.moongaz.ing>",
