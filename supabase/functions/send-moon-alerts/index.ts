@@ -137,7 +137,7 @@ async function sendEmail(
   const htmlBody = `<h1>Optimal Moon Gazing!</h1><p>The full moon will be visible in ${place} on ${dayData.datetime}.</p>`;
 
   const { data, error } = await resent.emails.send({
-    from: "Moon Alerts <alerts@moongaz.ing>",
+    from: "Moon Alerts <alerts@alerts.moongaz.ing>",
     to: [to],
     subject,
     html: htmlBody,

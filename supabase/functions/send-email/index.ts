@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     }
 
     const { data, error } = await resend.emails.send({
-      from: "Moon Alerts <alerts@moongaz.ing>",
+      from: "Moon Alerts <alerts@alerts.moongaz.ing>",
       to: [to],
       subject,
       html,
