@@ -1,18 +1,24 @@
 /* eslint-env node */
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Supabase environment variables not set');
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 export async function handler(event) {
   try {
+    if (!supabase) {
+      console.error('Supabase not configured');
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Service not configured' }),
+      };
+    }
+
     const token = event.queryStringParameters?.token;
 
     if (!token) {
