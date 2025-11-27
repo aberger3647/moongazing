@@ -40,13 +40,16 @@ if (!to || !subject) {
 });
 }
 
-const { data, error } = await resend.emails.send({
+const emailParams: any = {
   from: "Moon Alerts <alerts@alerts.moongaz.ing>",
-      to: [to],
+  to: [to],
   subject,
-html,
-  text,
-  });
+};
+
+if (html) emailParams.html = html;
+if (text) emailParams.text = text;
+
+const { data, error } = await resend.emails.send(emailParams);
 
 if (error) {
     console.error("Error sending email:", error);
