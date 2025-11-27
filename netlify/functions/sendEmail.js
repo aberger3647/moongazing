@@ -1,13 +1,10 @@
 /* eslint-env node */
 
-const { Resend } = require('resend');
+import { Resend } from 'resend';
 
 const resendApiKey = process.env.RESEND_API_KEY;
-if (!resendApiKey) {
-  throw new Error('RESEND_API_KEY not set');
-}
 
-const resend = new Resend(resendApiKey);
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export async function handler(event) {
   try {
@@ -15,6 +12,14 @@ export async function handler(event) {
       return {
         statusCode: 405,
         body: JSON.stringify({ error: 'Method not allowed' }),
+      };
+    }
+
+    if (!resend) {
+      console.error('RESEND_API_KEY is not set');
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Email service not configured' }),
       };
     }
 
@@ -39,7 +44,7 @@ export async function handler(event) {
       console.error('Error sending email:', error);
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: error.message }),
+        body: JSON.stringify({ error: error.message || 'Failed to send email' }),
       };
     }
 
@@ -51,7 +56,7 @@ export async function handler(event) {
     console.error('Unexpected error:', err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Internal server error' }),
+      body: JSON.stringify({ error: err.message || 'Internal server error' }),
     };
   }
 }
