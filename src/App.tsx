@@ -1,4 +1,5 @@
 import { Home } from "./Home";
+import { Unsubscribe } from "./Unsubscribe";
 import { Outlet } from "react-router-dom";
 import { NotFound } from "./NotFound";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -30,6 +31,10 @@ function App() {
         {
           path: "/",
           element: <Home location={location} setLocation={setLocation} />, 
+        },
+        {
+          path: "/unsubscribe",
+          element: <Unsubscribe />,
         },
       ],
     },

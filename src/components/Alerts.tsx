@@ -57,15 +57,22 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
       const locationId = locationData.id;
 
       // Create alert (or update if exists)
-      const { error: alertError } = await supabase
+      const { data: alertData, error: alertError } = await supabase
         .from("alerts")
         .upsert({
           user_id: userId,
           location_id: locationId,
           active: true
-        }, { onConflict: ['user_id', 'location_id'] });
+        }, { onConflict: ['user_id', 'location_id'] })
+        .select('unsubscribe_token')
+        .single();
 
       if (alertError) throw alertError;
+
+      const unsubscribeToken = alertData?.unsubscribe_token;
+      const unsubscribeLink = unsubscribeToken 
+        ? `${window.location.origin}/unsubscribe?token=${unsubscribeToken}`
+        : '';
 
       // Send confirmation email
       const emailResult = await sendEmail({
@@ -76,6 +83,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
           <p>You've been subscribed to moon gazing alerts for ${location}.</p>
           <p>You'll receive emails when conditions are optimal for moon gazing.</p>
           <p>Thank you for using Moongaz.ing!</p>
+          ${unsubscribeLink ? `<p><a href="${unsubscribeLink}">Unsubscribe from this location</a></p>` : ''}
         `,
       });
 
