@@ -101,7 +101,7 @@ export const Home = ({ location, setLocation }: HomeProps) => {
         <>
           <h2 className="font-herculanum text-4xl mb-4 text-center">{conditions.resolvedAddress}</h2>
           <Conditions data={conditions} />
-          <Places location={conditions.resolvedAddress} places={places} radius={radius} setRadius={setRadius} />
+          <Places location={conditions.resolvedAddress} places={places} radius={radius} setRadius={setRadius} loading={placesLoading} />
           <Alerts
             location={conditions.resolvedAddress}
             lat={conditions.latitude}

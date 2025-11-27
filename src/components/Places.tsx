@@ -7,6 +7,7 @@ interface PlacesProps {
   places: Place[];
   radius: number;
   setRadius: Dispatch<SetStateAction<number>>;
+  loading?: boolean;
 }
 
 export const Places = ({
@@ -14,6 +15,7 @@ export const Places = ({
   places,
   radius,
   setRadius,
+  loading = false,
 }: PlacesProps) => {
 
   return (
@@ -44,11 +46,13 @@ export const Places = ({
       </p>
 
       <div className="places mb-6 flex flex-col items-center max-w-96">
-        {places.length === 0 ? (
-          <p className="text-lg font-thin">
-            No places found within this radius.
-          </p>
-        ) : (
+         {loading ? (
+           <p className="text-lg font-thin">Loading places...</p>
+         ) : places.length === 0 ? (
+           <p className="text-lg font-thin">
+             No places found within this radius.
+           </p>
+         ) : (
           places.map((place) => (
             <div className="place-wrapper m-3" key={place.id}>
               <div className="place flex flex-col space-y-2">
