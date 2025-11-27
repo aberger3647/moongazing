@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { sendEmail } from "../utils";
 import { supabase } from "../supabaseClient";
 
@@ -12,6 +12,13 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const messageRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (message && messageRef.current) {
+      messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [message]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,7 +152,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
             {loading ? "Sending..." : "Subscribe"}
           </button>
         </form>
-        {message && <p className="text-center text-sm">{message}</p>}
+        {message && <p ref={messageRef} className="text-center text-sm text-white -mt-3">{message}</p>}
       </div>
     </>
   );
