@@ -56,14 +56,28 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
       if (locationError) throw locationError;
       const locationId = locationData.id;
 
-      // Create alert (or update if exists)
+      // Check if alert already exists for this email and location
+      const { data: existingAlert } = await supabase
+        .from("alerts")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("location_id", locationId)
+        .single();
+
+      if (existingAlert) {
+        setMessage("You're already subscribed to alerts for this location.");
+        setLoading(false);
+        return;
+      }
+
+      // Create alert
       const { data: alertData, error: alertError } = await supabase
         .from("alerts")
-        .upsert({
+        .insert({
           user_id: userId,
           location_id: locationId,
           active: true
-        }, { onConflict: ['user_id', 'location_id'] })
+        })
         .select('unsubscribe_token')
         .single();
 
@@ -95,11 +109,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
       }
     } catch (error: any) {
       console.error("Error subscribing:", error);
-      if (error.code === '23505' && error.message?.includes('alerts_user_id_location_id_key')) {
-        setMessage("You're already subscribed to alerts for this location.");
-      } else {
-        setMessage("Error subscribing. Please try again.");
-      }
+      setMessage("Error subscribing. Please try again.");
     }
 
     setLoading(false);
