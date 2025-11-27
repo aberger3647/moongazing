@@ -122,7 +122,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
           <button
             type="submit"
             disabled={loading}
-            className="font-herculanum text-xl bg-yellow-50 text-indigo-800 py-2 px-4 w-28 rounded-full disabled:opacity-50"
+            className="font-herculanum text-xl bg-yellow-50 text-indigo-800 py-2 px-4 w-32 rounded-full disabled:opacity-50"
           >
             {loading ? "Sending..." : "Subscribe"}
           </button>
