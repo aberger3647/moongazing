@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { sendEmail } from "../utils";
 import { supabase } from "../supabaseClient";
+import { titleCase } from "../utils";
 
 interface AlertsProps {
   location: string;
@@ -100,10 +101,10 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
       // Send confirmation email
       const emailResult = await sendEmail({
         to: email,
-        subject: `Moon Gazing Alert Subscription for ${location}`,
+        subject: `Moon Gazing Alert Subscription for ${titleCase(location)}`,
         html: `
           <h1>Moon Gazing Alerts Subscribed!</h1>
-          <p>You've been subscribed to moon gazing alerts for ${location}.</p>
+          <p>You've been subscribed to moon gazing alerts for ${titleCase(location)}.</p>
           <p>You'll receive emails when conditions are optimal for moon gazing.</p>
           <p>Thank you for using Moongaz.ing!</p>
           ${unsubscribeLink ? `<p><a href="${unsubscribeLink}">Unsubscribe from this location</a></p>` : ''}
@@ -130,11 +131,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
       <div className="flex flex-col items-center space-y-4">
         <p className="text-center">
           Email me when moon-gazing conditions are optimal for{" "}
-          {location
-            .split(" ")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ")}
-          :
+          {titleCase(location)}:
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4 items-center">
           <input

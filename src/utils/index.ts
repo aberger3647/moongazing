@@ -6,3 +6,4 @@ export { getConditions } from "./getConditions";
 export { setFavicon } from "./setFavicon";
 export { moonSvgs } from "./moonSvgs";
 export { sendEmail } from "./emailService";
+export { titleCase } from "./titleCase";

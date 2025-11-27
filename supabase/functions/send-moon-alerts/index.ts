@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.2";
-import { formatDate } from "./utils.ts";
+import { formatDate, titleCase } from "./utils.ts";
 import { Resend } from "npm:resend";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -142,8 +142,8 @@ async function sendEmail(
 
   const resent = new Resend(resendApiKey);
 
-  const subject = `Moon Gazing Alert for ${location}`;
-  let htmlBody = `<h1>Optimal Moon Gazing!</h1><p>The full moon will be visible in ${location} on ${dayData.datetime}.</p>`;
+  const subject = `Moon Gazing Alert for ${titleCase(location)}`;
+  let htmlBody = `<h1>Optimal Moon Gazing!</h1><p>The full moon will be visible in ${titleCase(location)} on ${dayData.datetime}.</p>`;
 
   if (nearbyPlaces.length > 0) {
     htmlBody += `<h2>Nearby Certified Dark Sky Places:</h2><ul>`;

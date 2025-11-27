@@ -58,7 +58,6 @@ export const Home = ({ location, setLocation }: HomeProps) => {
       setLoading(true);
       try {
         const fetchedConditions = await getConditions({ location: formLocation });
- console.log("Fetched conditions:", fetchedConditions);
         if (fetchedConditions && fetchedConditions.resolvedAddress) {
           setConditions(fetchedConditions);
           setLocation(fetchedConditions.resolvedAddress);
