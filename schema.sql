@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS alerts (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   location_id BIGINT NOT NULL REFERENCES user_locations(id) ON DELETE CASCADE,
   last_notified TIMESTAMP WITH TIME ZONE,
+  last_forecast_checked DATE,
   active BOOLEAN DEFAULT TRUE,
   unsubscribe_token UUID DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
