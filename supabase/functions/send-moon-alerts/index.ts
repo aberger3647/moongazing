@@ -49,6 +49,7 @@ Deno.serve(async (_req) => {
     id: number | string;
     user_locations?: LocationRow;
     users?: UserRow;
+    unsubscribe_token?: string;
   }
 
   for (const alert of alerts as AlertRow[]) {
