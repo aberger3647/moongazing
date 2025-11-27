@@ -92,7 +92,9 @@ function areConditionsOptimal(weatherDay, isFull) {
 }
 
 // Send alert email
-async function sendAlertEmail(userEmail, locationName, date, conditions) {
+async function sendAlertEmail(userEmail, locationName, date, conditions, unsubscribeToken) {
+  const titleCaseLocation = titleCase(locationName);
+  const baseUrl = 'https://moongaz.ing'; // Update with your domain
   const conditionDetails = `
     <ul>
       <li>Cloud Cover: ${conditions.cloudcover}%</li>
@@ -104,17 +106,18 @@ async function sendAlertEmail(userEmail, locationName, date, conditions) {
   const html = `
     <h2>Optimal Moongazing Conditions Alert</h2>
     <p>Great news! Optimal conditions for moongazing have been forecasted for:</p>
-    <p><strong>Location:</strong> ${locationName}</p>
+    <p><strong>Location:</strong> ${titleCaseLocation}</p>
     <p><strong>Date:</strong> ${date}</p>
     <p><strong>Conditions:</strong></p>
     ${conditionDetails}
     <p>The moon will be full, and all other conditions are optimal for moongazing!</p>
+    ${unsubscribeToken ? `<p><a href="${baseUrl}/manage-alerts?token=${unsubscribeToken}">Manage your alerts</a></p>` : ''}
   `;
 
   const text = `
 Optimal Moongazing Conditions Alert
 
-Location: ${locationName}
+Location: ${titleCaseLocation}
 Date: ${date}
 
 Conditions:
@@ -129,7 +132,7 @@ The moon will be full, and all other conditions are optimal for moongazing!
     await resend.emails.send({
       from: 'Moon Alerts <alerts@alerts.moongaz.ing>',
       to: [userEmail],
-      subject: `🌕 Optimal Moongazing Conditions on ${date} - ${locationName}`,
+      subject: `🌕 Optimal Moongazing Conditions on ${date} - ${titleCaseLocation}`,
       html,
       text,
     });
@@ -145,34 +148,42 @@ export async function handler() {
     const forecastDate = getDateIn7Days();
     console.log(`Checking weather alerts for date: ${forecastDate}`);
 
-    // Get all user locations
-    const { data: userLocations, error: locError } = await supabase
-      .from('user_locations')
-      .select('id, user_id, lat, lng, location_name');
+    // Get all active alerts with related data
+    const { data: alerts, error: alertsError } = await supabase
+      .from('alerts')
+      .select(`
+        id,
+        user_id,
+        location_id,
+        unsubscribe_token,
+        users(email),
+        user_locations(id, lat, lng, location_name)
+      `)
+      .eq('active', true);
 
-    if (locError) throw new Error(`Failed to fetch user locations: ${locError.message}`);
+    if (alertsError) throw new Error(`Failed to fetch alerts: ${alertsError.message}`);
 
-    if (!userLocations || userLocations.length === 0) {
-      console.log('No user locations found');
+    if (!alerts || alerts.length === 0) {
+      console.log('No active alerts found');
       return {
         statusCode: 200,
-        body: JSON.stringify({ message: 'No user locations to check' }),
+        body: JSON.stringify({ message: 'No alerts to check' }),
       };
     }
 
-    // Get all users
-    const { data: users, error: userError } = await supabase
-      .from('users')
-      .select('id, email');
-
-    if (userError) throw new Error(`Failed to fetch users: ${userError.message}`);
-
-    const userMap = new Map(users.map(u => [u.id, u.email]));
     let alertsSent = 0;
 
-    // Check each location
-    for (const location of userLocations) {
+    // Check each alert
+    for (const alert of alerts) {
       try {
+        const userEmail = alert.users?.email;
+        const location = alert.user_locations;
+
+        if (!userEmail || !location) {
+          console.warn('Skipping alert due to missing user or location data', { alert });
+          continue;
+        }
+
         // Check if moon will be full
         const isFull = await isMoonFull(forecastDate, location.lat, location.lng);
         
@@ -191,18 +202,14 @@ export async function handler() {
 
         // Check if conditions are optimal
         if (areConditionsOptimal(weather, true)) {
-          // Send email to user
-          const userEmail = userMap.get(location.user_id);
-          if (userEmail) {
-            const sent = await sendAlertEmail(userEmail, location.location_name, forecastDate, weather);
-            if (sent) {
-              alertsSent++;
-              // Update last_notified in alerts table
-              await supabase
-                .from('alerts')
-                .update({ last_notified: new Date().toISOString() })
-                .match({ location_id: location.id });
-            }
+          const sent = await sendAlertEmail(userEmail, location.location_name, forecastDate, weather, alert.unsubscribe_token);
+          if (sent) {
+            alertsSent++;
+            // Update last_notified in alerts table
+            await supabase
+              .from('alerts')
+              .update({ last_notified: new Date().toISOString() })
+              .eq('id', alert.id);
           }
         } else {
           console.log(`Conditions not optimal at ${location.location_name}`);
@@ -216,7 +223,7 @@ export async function handler() {
       statusCode: 200,
       body: JSON.stringify({
         success: true,
-        message: `Checked ${userLocations.length} locations, sent ${alertsSent} alerts`,
+        message: `Checked ${alerts.length} alerts, sent ${alertsSent} alerts`,
       }),
     };
   } catch (err) {

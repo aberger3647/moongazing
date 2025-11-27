@@ -1,5 +1,6 @@
 import { Home } from "./Home";
 import { Unsubscribe } from "./Unsubscribe";
+import { ManageAlerts } from "./ManageAlerts";
 import { Outlet } from "react-router-dom";
 import { NotFound } from "./NotFound";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -35,6 +36,10 @@ function App() {
         {
           path: "/unsubscribe",
           element: <Unsubscribe />,
+        },
+        {
+          path: "/manage-alerts",
+          element: <ManageAlerts />,
         },
       ],
     },

@@ -113,7 +113,7 @@ const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/s
         });
 
         // 5. Send email
-        await sendEmail(user.email || "", location_name || "", day7Typed, nearbyPlaces || []);
+        await sendEmail(user.email || "", location_name || "", day7Typed, nearbyPlaces || [], alert.unsubscribe_token || "");
 
         // 5. Update last_notified
         await supabase
@@ -136,11 +136,13 @@ async function sendEmail(
   location: string,
   dayData: { datetime?: string },
   nearbyPlaces: any[],
+  unsubscribeToken?: string,
 ) {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   if (!resendApiKey) throw new Error("RESEND_API_KEY not set");
 
   const resent = new Resend(resendApiKey);
+  const baseUrl = "https://moongaz.ing"; // Update with your domain
 
   const subject = `Moon Gazing Alert for ${titleCase(location)}`;
   let htmlBody = `<h1>Optimal Moon Gazing!</h1><p>The full moon will be visible in ${titleCase(location)} on ${dayData.datetime}.</p>`;
@@ -151,6 +153,10 @@ async function sendEmail(
       htmlBody += `<li>${place.place_name} (${place.category}) - ${(place.distance / 1000).toFixed(1)} km away</li>`;
     }
     htmlBody += `</ul>`;
+  }
+
+  if (unsubscribeToken) {
+    htmlBody += `<p><a href="${baseUrl}/manage-alerts?token=${unsubscribeToken}">Manage your alerts</a></p>`;
   }
 
   const { data, error } = await resent.emails.send({
