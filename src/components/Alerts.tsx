@@ -16,7 +16,9 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
 
   useEffect(() => {
     if (message && messageRef.current) {
-      messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        messageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 0);
     }
   }, [message]);
 
