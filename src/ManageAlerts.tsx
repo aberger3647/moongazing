@@ -163,7 +163,7 @@ export const ManageAlerts = () => {
                   <button
                     onClick={() => handleUnsubscribe(alert.id)}
                     disabled={unsubscribingIds.has(alert.id)}
-                    className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-yellow-50 px-4 py-2 rounded-lg transition"
+                    className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-yellow-50 px-4 py-2 rounded-lg transition"
                   >
                     {unsubscribingIds.has(alert.id) ? "Unsubscribing..." : "Unsubscribe"}
                   </button>
@@ -175,7 +175,7 @@ export const ManageAlerts = () => {
               <div className="text-center mb-6">
                 <button
                   onClick={handleUnsubscribeAll}
-                  className="bg-red-700 hover:bg-red-800 text-yellow-50 px-6 py-2 rounded-lg transition"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-yellow-50 px-6 py-2 rounded-lg transition"
                 >
                   Unsubscribe from All
                 </button>
