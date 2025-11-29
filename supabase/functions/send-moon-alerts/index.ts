@@ -147,132 +147,25 @@ async function sendEmail(
 
   const subject = `Moon Gazing Alert for ${titleCase(location)}`;
   let htmlBody = `
-  <!DOCTYPE html>
-  <html>
-  <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    .header {
-      background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%);
-      color: #ffffff;
-      padding: 40px 20px;
-      text-align: center;
-    }
-    .header h1 {
-      font-family: 'Herculanum', serif;
-      font-size: 36px;
-      margin: 0;
-      font-weight: normal;
-    }
-    .content {
-      padding: 30px 20px;
-    }
-    .content h2 {
-      font-family: 'Herculanum', serif;
-      font-size: 24px;
-      color: #1e1b4b;
-      margin-top: 0;
-    }
-    .content p {
-      color: #4b5563;
-      font-size: 16px;
-      line-height: 1.6;
-      margin: 15px 0;
-    }
-    .places-list {
-      background-color: #f5f3ff;
-      border-left: 4px solid #3730a3;
-      padding: 15px;
-      border-radius: 6px;
-      margin: 20px 0;
-    }
-    .places-list h3 {
-      font-family: 'Herculanum', serif;
-      color: #1e1b4b;
-      margin: 0 0 12px 0;
-      font-size: 18px;
-    }
-    .place-item {
-      color: #4b5563;
-      font-size: 14px;
-      padding: 8px 0;
-      border-bottom: 1px solid #e0d9ff;
-    }
-    .place-item:last-child {
-      border-bottom: none;
-    }
-    .place-name {
-      font-weight: 600;
-      color: #1e1b4b;
-    }
-    .place-category {
-      color: #8b8b8b;
-      font-size: 13px;
-    }
-    .cta-button {
-      display: inline-block;
-      background-color: #fef3c7;
-      color: #1e1b4b;
-      padding: 12px 24px;
-      border-radius: 24px;
-      text-decoration: none;
-      font-weight: 600;
-      margin: 20px 0;
-      border: 2px solid #fbbf24;
-      transition: all 0.3s ease;
-    }
-    .cta-button:hover {
-      background-color: #fcd34d;
-      transform: scale(1.05);
-    }
-    .footer {
-      background-color: #f5f3ff;
-      padding: 20px;
-      text-align: center;
-      font-size: 12px;
-      color: #8b8b8b;
-      border-top: 1px solid #e0d9ff;
-    }
-    .footer a {
-      color: #3730a3;
-      text-decoration: none;
-    }
-  </style>
-  </head>
-  <body>
-  <div class="container">
-    <div class="header">
-      <h1>Moongaz.ing</h1>
+  <div style="font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%); color: #ffffff; padding: 40px 20px; text-align: center;">
+      <h1 style="font-family: 'Herculanum', serif; font-size: 36px; margin: 0; font-weight: normal;">Moongaz.ing</h1>
     </div>
-    <div class="content">
-      <h2>Optimal Moon Gazing! 🌕</h2>
-      <p>The full moon will be visible in <strong>${titleCase(location)}</strong> on <strong>${dayData.datetime}</strong>.</p>
-      <p>This is the perfect time to head out for some moongazing. Clear skies are forecasted, and the full moon will be at its brightest!</p>`;
+    <div style="padding: 30px 20px;">
+      <h2 style="font-family: 'Herculanum', serif; font-size: 24px; color: #1e1b4b; margin-top: 0;">Optimal Moon Gazing! 🌕</h2>
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 15px 0;">The full moon will be visible in <strong>${titleCase(location)}</strong> on <strong>${dayData.datetime}</strong>.</p>
+      <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 15px 0;">This is the perfect time to head out for some moongazing. Clear skies are forecasted, and the full moon will be at its brightest!</p>`;
 
   if (nearbyPlaces.length > 0) {
     htmlBody += `
-      <div class="places-list">
-        <h3>🌌 Nearby Certified Dark Sky Places</h3>`;
+      <div style="background-color: #f5f3ff; border-left: 4px solid #3730a3; padding: 15px; border-radius: 6px; margin: 20px 0;">
+        <h3 style="font-family: 'Herculanum', serif; color: #1e1b4b; margin: 0 0 12px 0; font-size: 18px;">🌌 Nearby Certified Dark Sky Places</h3>`;
     for (const place of nearbyPlaces) {
       htmlBody += `
-        <div class="place-item">
-          <div class="place-name">${place.place_name}</div>
-          <div class="place-category">${place.category} • ${(place.distance / 1000).toFixed(1)} km away</div>
+        <div style="color: #4b5563; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #e0d9ff;">
+          <div style="font-weight: 600; color: #1e1b4b;">${place.place_name}</div>
+          <div style="color: #8b8b8b; font-size: 13px;">${place.category} • ${(place.distance / 1000).toFixed(1)} km away</div>
         </div>`;
     }
     htmlBody += `
@@ -281,13 +174,12 @@ async function sendEmail(
 
   htmlBody += `
     </div>
-    <div class="footer">
-      <p>You're receiving this email because you have an active moon gazing alert.</p>
-      <p><a href="${baseUrl}/manage-alerts?token=${unsubscribeToken}">Update preferences</a> • <a href="${baseUrl}">Visit Moongaz.ing</a></p>
+    <div style="background-color: #f5f3ff; padding: 20px; text-align: center; font-size: 12px; color: #8b8b8b; border-top: 1px solid #e0d9ff;">
+      <p style="margin: 8px 0;">You're receiving this email because you have an active moon gazing alert.</p>
+      <p style="margin: 8px 0;"><a href="${baseUrl}/manage-alerts?token=${unsubscribeToken}" style="color: #3730a3; text-decoration: none;">Update preferences</a> • <a href="${baseUrl}" style="color: #3730a3; text-decoration: none;">Visit Moongaz.ing</a></p>
     </div>
   </div>
-  </body>
-  </html>`;
+  </div>`;
 
   const { data, error } = await resent.emails.send({
     from: "Moon Alerts <alerts@alerts.moongaz.ing>",
