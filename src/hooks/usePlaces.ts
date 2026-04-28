@@ -35,11 +35,18 @@ export function usePlaces(
 
       try {
    const payload = { lat, lng, radius, limit };
+        const getPlacesUrl =
+          import.meta.env.VITE_GET_PLACES_FUNCTION ||
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-places`;
         const res = await fetch(
-          "https://wbvreyzoqdqtcanrslhw.functions.supabase.co/get-places",
+          getPlacesUrl,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json",  "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,  },
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
+            },
             body: JSON.stringify(payload),
           }
         );
