@@ -91,6 +91,13 @@ function areConditionsOptimal(weatherDay, isFull) {
   );
 }
 
+function titleCase(str) {
+  return str
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 // Send alert email
 async function sendAlertEmail(userEmail, locationName, date, conditions, unsubscribeToken) {
   const titleCaseLocation = titleCase(locationName);

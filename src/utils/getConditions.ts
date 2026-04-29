@@ -17,7 +17,11 @@ export async function getConditions({
 }: GetConditionsParams): Promise<VisualCrossing> {
   if (!location) throw new Error("Location is required");
 
-  const res = await fetch("/api/getConditions", {
+  const endpoint =
+    import.meta.env.VITE_GET_CONDITIONS_FUNCTION ||
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-conditions`;
+
+  const res = await fetch(endpoint, {
     method: "POST",
     body: JSON.stringify({ location, date, include, elements, unitGroup }),
     headers: { "Content-Type": "application/json" },
