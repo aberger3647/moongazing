@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.2";
+import { createClient } from "npm:@supabase/supabase-js@2.39.2";
 import { formatDate, titleCase } from "./utils.ts";
 import { Resend } from "npm:resend";
 
@@ -13,6 +13,12 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// A day counts as "full moon" when Visual Crossing's moonphase (0=new, 0.5=full,
+// 1=new) is within this of 0.5. ~0.034 phase units ≈ 1 day, so 0.05 ≈ ±1.5 days.
+const FULL_MOON_TOLERANCE = 0.05;
+// Don't email the same alert more than once per lunar cycle (~29.5 days).
+const RENOTIFY_DAYS = 25;
+
 // Use Deno.serve for Edge runtime
 Deno.serve(async (_req) => {
   // 1. Get active alerts
@@ -23,6 +29,7 @@ Deno.serve(async (_req) => {
       user_id,
       location_id,
       last_notified,
+      unsubscribe_token,
       users(email),
       user_locations(lat, lng, location_name)
     `)
@@ -50,6 +57,7 @@ Deno.serve(async (_req) => {
     user_locations?: LocationRow;
     users?: UserRow;
     unsubscribe_token?: string;
+    last_notified?: string;
   }
 
   for (const alert of alerts as AlertRow[]) {
@@ -86,42 +94,67 @@ const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/s
       );
       const forecast = await forecastRes.json();
 
-      // 3. Check for optimal moon conditions
-      const day7 = forecast?.days?.[6]; // 7 days ahead
-      if (!day7) {
-        console.warn("No day7 in forecast for", { lat, lng });
-        continue;
-      }
-
+      // 3. Find the best moongazing day in the next 7 days: clear skies on or
+      // near the full moon. Visual Crossing moonphase is 0=new, 0.5=full, 1=new,
+      // so we look for days close to 0.5 (NOT === 1, which is the new moon).
       interface DayData {
         datetime?: string;
         conditions?: string;
         moonphase?: number;
       }
 
-      const day7Typed = day7 as DayData;
+      const days = (forecast?.days || []) as DayData[];
+      const optimalDay = days
+        .filter(
+          (d) =>
+            typeof d.moonphase === "number" &&
+            Math.abs(d.moonphase - 0.5) <= FULL_MOON_TOLERANCE &&
+            (d.conditions || "").includes("Clear"),
+        )
+        .sort(
+          (a, b) =>
+            Math.abs((a.moonphase as number) - 0.5) -
+            Math.abs((b.moonphase as number) - 0.5),
+        )[0];
 
-      if (
-      (day7Typed.conditions || "").includes("Clear") &&
-      day7Typed.moonphase === 1
-      ) {
-      // 4. Get nearby dark sky places
-      const { data: nearbyPlaces } = await supabase.rpc('get_places', {
-          p_lat: lat,
-          p_lng: lng,
-          p_radius: 50000, // 50km
-          p_limit_rows: 5,
-        });
-
-        // 5. Send email
-        await sendEmail(user.email || "", location_name || "", day7Typed, nearbyPlaces || [], alert.unsubscribe_token || "");
-
-        // 5. Update last_notified
-        await supabase
-          .from("alerts")
-          .update({ last_notified: new Date().toISOString() })
-          .eq("id", alert.id);
+      if (!optimalDay) {
+        // No clear full-moon day in the forecast window for this location.
+        continue;
       }
+
+      // Avoid re-notifying for the same full moon: skip if this alert was already
+      // notified within the last RENOTIFY_DAYS days.
+      if (alert.last_notified) {
+        const daysSinceNotified =
+          (today.getTime() - new Date(alert.last_notified).getTime()) /
+          (1000 * 60 * 60 * 24);
+        if (daysSinceNotified < RENOTIFY_DAYS) {
+          continue;
+        }
+      }
+
+      // 4. Get nearby dark sky places
+      const { data: nearbyPlaces } = await supabase.rpc("get_places", {
+        p_lat: lat,
+        p_lng: lng,
+        p_radius: 50000, // 50km
+        p_limit_rows: 5,
+      });
+
+      // 5. Send email about the optimal day
+      await sendEmail(
+        user.email || "",
+        location_name || "",
+        optimalDay,
+        nearbyPlaces || [],
+        alert.unsubscribe_token || "",
+      );
+
+      // 6. Update last_notified
+      await supabase
+        .from("alerts")
+        .update({ last_notified: new Date().toISOString() })
+        .eq("id", alert.id);
     } catch (err) {
       console.error("Error processing alert", err);
       // continue processing remaining alerts
