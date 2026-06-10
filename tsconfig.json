@@ -25,8 +25,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.d.ts",
-    "netlify/functions/getConditions.js"
+    "src/**/*.d.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -27,7 +27,10 @@ export const ManageAlerts = () => {
           return;
         }
 
-        const response = await fetch(`/.netlify/functions/manage-alerts?token=${token}`);
+        const endpoint =
+          import.meta.env.VITE_MANAGE_ALERTS_FUNCTION ||
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-alerts`;
+        const response = await fetch(`${endpoint}?token=${token}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -50,7 +53,10 @@ export const ManageAlerts = () => {
     setUnsubscribingIds(prev => new Set(prev).add(alertId));
 
     try {
-      const response = await fetch(`/.netlify/functions/unsubscribe-alert`, {
+      const endpoint =
+        import.meta.env.VITE_UNSUBSCRIBE_ALERT_FUNCTION ||
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/unsubscribe-alert`;
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ alertId }),
@@ -85,7 +91,10 @@ export const ManageAlerts = () => {
     setUnsubscribingIds(new Set(alerts.map(a => a.id)));
 
     try {
-      const response = await fetch(`/.netlify/functions/unsubscribe-all-alerts`, {
+      const endpoint =
+        import.meta.env.VITE_UNSUBSCRIBE_ALL_FUNCTION ||
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/unsubscribe-all-alerts`;
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 

@@ -16,7 +16,10 @@ export const Unsubscribe = () => {
           return;
         }
 
-        const response = await fetch(`/.netlify/functions/unsubscribe?token=${token}`);
+        const endpoint =
+          import.meta.env.VITE_UNSUBSCRIBE_FUNCTION ||
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/unsubscribe`;
+        const response = await fetch(`${endpoint}?token=${token}`);
         const data = await response.json();
 
         if (response.ok) {
