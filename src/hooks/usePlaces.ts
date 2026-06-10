@@ -70,5 +70,5 @@ export function usePlaces(
     fetchPlaces();
   }, [location?.lat, location?.lng, radius, limit]);
 
-  return { places, loading, error, noPlaaces: !loading && places.length === 0 };
+  return { places, loading, error, noPlaces: !loading && places.length === 0 };
 }

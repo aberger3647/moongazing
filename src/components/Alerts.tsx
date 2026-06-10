@@ -59,7 +59,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
           lat,
           lng,
           location_name: location
-        }, { onConflict: ['user_id', 'lat', 'lng'] })
+        }, { onConflict: 'user_id,lat,lng' })
         .select("id")
         .single();
 

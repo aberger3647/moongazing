@@ -1,70 +1,16 @@
 import { Resend } from "npm:resend";
+import { createHandler } from "./handler.ts";
 
+// Initialize at module scope but DON'T throw if the key is missing — that
+// crashes the edge-runtime worker. Fail closed at request time instead.
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
-if (!resendApiKey) throw new Error("RESEND_API_KEY not set");
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
-// Verify domain is configured - will throw error if domain not verified
-const resend = new Resend(resendApiKey);
-
-interface EmailRequest {
-  to: string;
-  subject: string;
-  html?: string;
-  text?: string;
-}
-
-// CORS headers
-const corsHeaders = {
-'Access-Control-Allow-Origin': '*',
-'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
-Deno.serve(async (req) => {
-  // Handle CORS preflight requests
-if (req.method === 'OPTIONS') {
-return new Response('ok', { headers: corsHeaders });
-}
-
-if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
-}
-
-try {
-const { to, subject, html, text }: EmailRequest = await req.json();
-
-if (!to || !subject) {
-  return new Response("Missing required fields: to, subject", {
-        status: 400,
-    headers: corsHeaders,
-});
-}
-
-const emailParams: any = {
-  from: "Moon Alerts <alerts@alerts.moongaz.ing>",
-  to: [to],
-  subject,
-};
-
-if (html) emailParams.html = html;
-if (text) emailParams.text = text;
-
-const { data, error } = await resend.emails.send(emailParams);
-
-if (error) {
-    console.error("Error sending email:", error);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: corsHeaders,
-      });
-    }
-
-    return new Response(JSON.stringify({ success: true, data }), {
-      status: 200,
-      headers: corsHeaders,
-    });
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    return new Response("Internal server error", { status: 500, headers: corsHeaders });
-  }
-});
+Deno.serve(
+  createHandler({
+    resendSend: resend
+      ? (payload) =>
+        resend.emails.send(payload as Parameters<typeof resend.emails.send>[0])
+      : null,
+  }),
+);

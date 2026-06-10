@@ -19,7 +19,7 @@ export const Unsubscribe = () => {
         const endpoint =
           import.meta.env.VITE_UNSUBSCRIBE_FUNCTION ||
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/unsubscribe`;
-        const response = await fetch(`${endpoint}?token=${token}`);
+        const response = await fetch(`${endpoint}?token=${encodeURIComponent(token)}`);
         const data = await response.json();
 
         if (response.ok) {

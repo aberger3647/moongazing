@@ -1,72 +1,13 @@
-import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.2";
+import { createHandler } from "./handler.ts";
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+// Fail-closed at request time instead of module-level throw, so a missing env
+// var produces a 500 instead of crashing the whole edge-runtime worker.
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-interface PlaceWithDistance {
-  id: number;
-  place_name: string;
-  category: string;
-  lat: number;
-  lng: number;
-  distance: number;
-}
+const supabase = supabaseUrl && supabaseKey
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Supabase URL or SERVICE_ROLE_KEY not set in Edge Function secrets");
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  try {
-    const bodyText = await req.text();
-
-    let payload;
-    try {
-      payload = JSON.parse(bodyText);
-    } catch (err) {
-      return new Response(
-        JSON.stringify({ error: { message: "Invalid JSON body", raw: bodyText } }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const { lat, lng, radius = 482803, limit = 10 } = payload || {};
-
-    const { data, error } = await supabase.rpc('get_places', {
-      p_lat: lat,
-      p_lng: lng,
-      p_radius: radius,
-      p_limit_rows: limit,
-    });
-
-    if (error) {
-      return new Response(JSON.stringify({ error: { message: error.message } }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const places = data as PlaceWithDistance[];
-
-    return new Response(JSON.stringify({ data: places }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
-  } catch (err: any) {
-    console.error("[Edge] Function error:", err);
-    return new Response(JSON.stringify({ error: { message: err.message || 'Unknown error' } }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-});
+Deno.serve(createHandler({ supabase }));
