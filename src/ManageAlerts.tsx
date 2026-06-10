@@ -15,12 +15,11 @@ export const ManageAlerts = () => {
   const [message, setMessage] = useState("");
   const [unsubscribingIds, setUnsubscribingIds] = useState<Set<string>>(new Set());
 
+  const token = new URLSearchParams(window.location.search).get("token");
+
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get("token");
-
         if (!token) {
           setError("No management token provided.");
           setLoading(false);
@@ -47,7 +46,7 @@ export const ManageAlerts = () => {
     };
 
     fetchAlerts();
-  }, []);
+  }, [token]);
 
   const handleUnsubscribe = async (alertId: string) => {
     setUnsubscribingIds(prev => new Set(prev).add(alertId));
@@ -59,7 +58,7 @@ export const ManageAlerts = () => {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ alertId }),
+        body: JSON.stringify({ token, alertId }),
       });
 
       const data = await response.json();
@@ -97,9 +96,7 @@ export const ManageAlerts = () => {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          alertIds: alerts.map(a => a.id)
-        }),
+        body: JSON.stringify({ token }),
       });
 
       const data = await response.json();
