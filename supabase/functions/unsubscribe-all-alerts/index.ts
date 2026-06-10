@@ -1,23 +1,8 @@
-import { createClient } from "npm:@supabase/supabase-js@2.39.2";
-import { corsHeaders } from "../_shared/cors.ts";
-
-const supabaseUrl = Deno.env.get("SUPABASE_URL");
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-const supabase = supabaseUrl && supabaseKey
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
+import { json, preflight, resolveUserFromToken, supabase } from "../_shared/supabase.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  const json = (body: unknown, status = 200) =>
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  const pre = preflight(req);
+  if (pre) return pre;
 
   try {
     if (!supabase) {
@@ -31,27 +16,26 @@ Deno.serve(async (req) => {
     }
 
     // Resolve the owning user from the management token (one of their alert tokens)
-    const { data: tokenAlert, error: tokenError } = await supabase
-      .from("alerts")
-      .select("user_id")
-      .eq("unsubscribe_token", token)
-      .single();
+    const resolved = await resolveUserFromToken(supabase, token);
+    if (!resolved.ok) return resolved.response;
 
-    if (tokenError || !tokenAlert) {
-      return json({ error: "Invalid or expired management token" }, 404);
-    }
-
-    // Deactivate all of that user's alerts
-    const { error: updateError } = await supabase
+    // Deactivate all of that user's currently-active alerts; report how many.
+    const { data: updated, error: updateError } = await supabase
       .from("alerts")
       .update({ active: false })
-      .eq("user_id", tokenAlert.user_id);
+      .eq("user_id", resolved.userId)
+      .eq("active", true)
+      .select("id");
 
     if (updateError) throw updateError;
 
+    const count = updated?.length ?? 0;
     return json({
       success: true,
-      message: "You have been unsubscribed from all alerts",
+      count,
+      message: count > 0
+        ? "You have been unsubscribed from all alerts"
+        : "You had no active alerts",
     });
   } catch (err) {
     console.error("Unsubscribe all alerts error:", err);

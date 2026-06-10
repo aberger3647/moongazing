@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS alerts (
   last_notified TIMESTAMP WITH TIME ZONE,
   last_forecast_checked DATE,
   active BOOLEAN DEFAULT TRUE,
-  unsubscribe_token UUID DEFAULT gen_random_uuid(),
+  unsubscribe_token UUID DEFAULT gen_random_uuid() NOT NULL UNIQUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id, location_id)
 );

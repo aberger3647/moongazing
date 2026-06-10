@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { titleCase } from "./utils/titleCase";
 
 interface Alert {
@@ -14,8 +14,26 @@ export const ManageAlerts = () => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [unsubscribingIds, setUnsubscribingIds] = useState<Set<string>>(new Set());
+  const [unsubscribingAll, setUnsubscribingAll] = useState(false);
 
-  const token = new URLSearchParams(window.location.search).get("token");
+  const token = useMemo(
+    () => new URLSearchParams(window.location.search).get("token"),
+    [],
+  );
+
+  // Show a transient success message, replacing any pending auto-clear timer.
+  const messageTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const flashMessage = (text: string) => {
+    if (messageTimer.current) clearTimeout(messageTimer.current);
+    setMessage(text);
+    messageTimer.current = setTimeout(() => setMessage(""), 3000);
+  };
+  useEffect(
+    () => () => {
+      if (messageTimer.current) clearTimeout(messageTimer.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -29,7 +47,7 @@ export const ManageAlerts = () => {
         const endpoint =
           import.meta.env.VITE_MANAGE_ALERTS_FUNCTION ||
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-alerts`;
-        const response = await fetch(`${endpoint}?token=${token}`);
+        const response = await fetch(`${endpoint}?token=${encodeURIComponent(token)}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -49,6 +67,7 @@ export const ManageAlerts = () => {
   }, [token]);
 
   const handleUnsubscribe = async (alertId: string) => {
+    setError("");
     setUnsubscribingIds(prev => new Set(prev).add(alertId));
 
     try {
@@ -64,9 +83,9 @@ export const ManageAlerts = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setAlerts(alerts.filter(alert => alert.id !== alertId));
-        setMessage(`Unsubscribed from ${alerts.find(a => a.id === alertId)?.location_name || "location"}`);
-        setTimeout(() => setMessage(""), 3000);
+        const name = alerts.find(a => a.id === alertId)?.location_name || "location";
+        setAlerts(prev => prev.filter(alert => alert.id !== alertId));
+        flashMessage(`Unsubscribed from ${name}`);
       } else {
         setError(data.error || "Failed to unsubscribe.");
       }
@@ -83,10 +102,13 @@ export const ManageAlerts = () => {
   };
 
   const handleUnsubscribeAll = async () => {
+    if (unsubscribingAll) return;
     if (!window.confirm("Are you sure you want to unsubscribe from all alerts?")) {
       return;
     }
 
+    setError("");
+    setUnsubscribingAll(true);
     setUnsubscribingIds(new Set(alerts.map(a => a.id)));
 
     try {
@@ -103,7 +125,7 @@ export const ManageAlerts = () => {
 
       if (response.ok) {
         setAlerts([]);
-        setMessage("You have been unsubscribed from all alerts.");
+        flashMessage("You have been unsubscribed from all alerts.");
       } else {
         setError(data.error || "Failed to unsubscribe from all alerts.");
       }
@@ -111,6 +133,7 @@ export const ManageAlerts = () => {
       console.error("Unsubscribe all error:", err);
       setError("An error occurred while unsubscribing from all alerts.");
     } finally {
+      setUnsubscribingAll(false);
       setUnsubscribingIds(new Set());
     }
   };
@@ -181,9 +204,10 @@ export const ManageAlerts = () => {
               <div className="text-center mb-6">
                 <button
                   onClick={handleUnsubscribeAll}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-yellow-50 px-6 py-2 rounded-lg transition"
+                  disabled={unsubscribingAll}
+                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-yellow-50 px-6 py-2 rounded-lg transition"
                 >
-                  Unsubscribe from All
+                  {unsubscribingAll ? "Unsubscribing..." : "Unsubscribe from All"}
                 </button>
               </div>
             )}

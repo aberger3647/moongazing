@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS alerts (
   location_id BIGINT NOT NULL REFERENCES user_locations(id) ON DELETE CASCADE,
   last_notified TIMESTAMP WITH TIME ZONE,
   active BOOLEAN DEFAULT TRUE,
-  unsubscribe_token UUID DEFAULT gen_random_uuid(),
+  unsubscribe_token UUID DEFAULT gen_random_uuid() NOT NULL UNIQUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id, location_id)
 );

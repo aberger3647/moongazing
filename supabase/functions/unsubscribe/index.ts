@@ -1,23 +1,8 @@
-import { createClient } from "npm:@supabase/supabase-js@2.39.2";
-import { corsHeaders } from "../_shared/cors.ts";
-
-const supabaseUrl = Deno.env.get("SUPABASE_URL");
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-const supabase = supabaseUrl && supabaseKey
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
+import { json, preflight, supabase } from "../_shared/supabase.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  const json = (body: unknown, status = 200) =>
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  const pre = preflight(req);
+  if (pre) return pre;
 
   try {
     if (!supabase) {
@@ -33,7 +18,7 @@ Deno.serve(async (req) => {
     // Find the alert with this token
     const { data: alert, error: fetchError } = await supabase
       .from("alerts")
-      .select("id, user_id, location_id")
+      .select("id")
       .eq("unsubscribe_token", token)
       .single();
 

@@ -1,23 +1,8 @@
-import { createClient } from "npm:@supabase/supabase-js@2.39.2";
-import { corsHeaders } from "../_shared/cors.ts";
-
-const supabaseUrl = Deno.env.get("SUPABASE_URL");
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-const supabase = supabaseUrl && supabaseKey
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
+import { json, preflight, resolveUserFromToken, supabase } from "../_shared/supabase.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  const json = (body: unknown, status = 200) =>
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  const pre = preflight(req);
+  if (pre) return pre;
 
   try {
     if (!supabase) {
@@ -31,15 +16,8 @@ Deno.serve(async (req) => {
     }
 
     // Find the user by their management token (one of their alert tokens)
-    const { data: alert, error: fetchError } = await supabase
-      .from("alerts")
-      .select("user_id")
-      .eq("unsubscribe_token", token)
-      .single();
-
-    if (fetchError || !alert) {
-      return json({ error: "Invalid or expired management token" }, 404);
-    }
+    const resolved = await resolveUserFromToken(supabase, token);
+    if (!resolved.ok) return resolved.response;
 
     // Get all active alerts for this user
     const { data: alerts, error: alertsError } = await supabase
@@ -47,7 +25,7 @@ Deno.serve(async (req) => {
       .select(
         "id, location_id, active, unsubscribe_token, user_locations(location_name)",
       )
-      .eq("user_id", alert.user_id)
+      .eq("user_id", resolved.userId)
       .eq("active", true);
 
     if (alertsError) throw alertsError;
