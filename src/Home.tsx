@@ -6,11 +6,12 @@ import { useState, useEffect } from "react";
 interface HomeProps {
   location: string | null;
   setLocation: (loc: string) => void;
+  setCloudcover: (c: number | null) => void;
 }
 
 import { usePlaces } from "./hooks/usePlaces";
 
-export const Home = ({ location, setLocation }: HomeProps) => {
+export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
   const [conditions, setConditions] = useState<VisualCrossing | null>(null);
   const [loading, setLoading] = useState(false);
   const [moonPhase, setMoonPhase] = useState<MoonPhase>("Full Moon");
@@ -61,6 +62,7 @@ export const Home = ({ location, setLocation }: HomeProps) => {
         if (fetchedConditions && fetchedConditions.resolvedAddress) {
           setConditions(fetchedConditions);
           setLocation(fetchedConditions.resolvedAddress);
+          setCloudcover(fetchedConditions.currentConditions?.cloudcover ?? null);
           setUserLat(fetchedConditions.latitude);
           setUserLon(fetchedConditions.longitude);
         }

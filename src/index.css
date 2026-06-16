@@ -8,3 +8,44 @@
   font-weight: normal;
   font-style: normal;
 }
+
+/* ---- Animated sky background (twinkling stars + drifting clouds) ----
+   All motion is transform/opacity only (GPU-friendly). Per-element timing is
+   supplied via CSS custom properties set inline by the React components. */
+@keyframes twinkle {
+  0%   { opacity: 0.15; transform: scale(0.85); }
+  100% { opacity: 1;    transform: scale(1.1); }
+}
+
+@keyframes parallax {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(var(--px, 10px), var(--py, 12px), 0); }
+}
+
+@keyframes drift-x {
+  from { transform: translateX(-6vw); }
+  to   { transform: translateX(6vw); }
+}
+
+.star-twinkle {
+  animation: twinkle var(--tdur, 3s) ease-in-out var(--tdelay, 0s) infinite alternate;
+}
+
+.parallax-layer {
+  animation: parallax var(--pdur, 60s) ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.cloud-drift {
+  animation: drift-x var(--cdur, 60s) ease-in-out var(--cdelay, 0s) infinite alternate;
+  will-change: transform;
+}
+
+/* Respect users who prefer less motion: keep the layers, freeze the animation. */
+@media (prefers-reduced-motion: reduce) {
+  .star-twinkle,
+  .parallax-layer,
+  .cloud-drift {
+    animation: none !important;
+  }
+}
