@@ -11,7 +11,13 @@ import "./App.css";
 const Layout = ({ cloudcover }: { cloudcover: number | null }) => {
   return (
     <div className="relative min-h-screen w-full text-white">
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-indigo-950 to-indigo-600" />
+      <div
+        className="fixed inset-0 -z-10"
+        style={{
+          background:
+            "linear-gradient(180deg, #07071c 0%, #0f0f30 42%, #181747 74%, #232255 100%)",
+        }}
+      />
       <StarsBackground />
       <CloudsBackground cloudcover={cloudcover} />
       <div className="relative z-10">
