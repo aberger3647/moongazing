@@ -92,10 +92,9 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
           width={224}
           height={224}
           className="h-40 w-40 animate-moon-float sm:h-52 sm:w-52"
-          style={{ filter: "drop-shadow(0 0 34px rgba(255, 232, 166, 0.45))" }}
         />
 
-        <h1 className="mt-6 font-herculanum text-5xl tracking-display sm:text-6xl">
+        <h1 className="mt-6 font-herculanum text-5xl sm:text-6xl">
           Moongaz.ing
         </h1>
         <p className="mt-3 max-w-md text-lg text-ink-soft">

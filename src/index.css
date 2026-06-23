@@ -22,11 +22,7 @@
   to   { opacity: 1; }
 }
 
-/* Diffraction spikes on the few brightest stars breathe gently. */
-@keyframes glint {
-  0%, 100% { opacity: 0.15; transform: translate(-50%, -50%) scale(0.7); }
-  50%      { opacity: 0.6;  transform: translate(-50%, -50%) scale(1); }
-}
+/* Bright stars are simply larger, steadier sparkles — no diffraction spikes. */
 
 /* Whole-layer parallax drift fakes depth (near layers move further). */
 @keyframes parallax {
@@ -52,20 +48,6 @@
   animation: twinkle var(--tdur, 3s) ease-in-out var(--tdelay, 0s) infinite alternate;
 }
 
-/* Brightest stars: a soft cross of light. Pseudo-elements inherit --sc/--spike. */
-.star-bright::before,
-.star-bright::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(var(--spike-dir, to right), transparent, var(--sc, #fff), transparent);
-  animation: glint var(--gdur, 6s) ease-in-out var(--tdelay, 0s) infinite;
-  pointer-events: none;
-}
-.star-bright::before { width: var(--spike, 24px); height: 1px; }
-.star-bright::after  { width: 1px; height: var(--spike, 24px); --spike-dir: to bottom; }
 
 .parallax-layer {
   animation: parallax var(--pdur, 60s) ease-in-out infinite alternate;
@@ -115,8 +97,6 @@
    and never fire meteors. The still sky is still beautiful. */
 @media (prefers-reduced-motion: reduce) {
   .star-twinkle,
-  .star-bright::before,
-  .star-bright::after,
   .parallax-layer,
   .cloud-drift {
     animation: none !important;
@@ -139,7 +119,7 @@
   --hairline: rgba(165, 180, 252, 0.16);
   --hairline-strong: rgba(165, 180, 252, 0.30);
 
-  --ink: #eceefe;
+  --ink: #ffffff;
   --ink-soft: #c3c9ef;
   --ink-mute: #969ed0;
 

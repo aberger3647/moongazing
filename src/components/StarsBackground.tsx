@@ -1,26 +1,24 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
-// A believable deep-night sky. Depth is faked with three parallax layers (near =
-// larger/brighter/faster, far = smaller/dimmer/slower); stars carry real colour
-// temperature (cool blue-white → white → warm amber) and shimmer by opacity only
-// so they never balloon. A moon-glow lights the upper sky, a faint Milky Way adds
-// depth, and the brightest stars wear soft diffraction spikes. Pure CSS, no deps —
-// except the occasional shooting star, the one scheduled "moment" of delight.
+// A vector night sky. Stars are crisp four-point sparkles — flat SVG shapes, no
+// glow — carried on three parallax depth layers (near = larger/brighter/faster,
+// far = smaller/dimmer/slower) and shimmering by opacity alone so they never
+// balloon. The brightest few are simply larger and steadier. Pure SVG + CSS, no
+// deps, except the occasional shooting star: the one scheduled moment of delight.
 
 // Weighted toward white; a minority run cool or warm, like a real field.
 const STAR_COLORS = [
-  "#ffffff", "#ffffff", "#ffffff", "#f3f6ff", // white / near-white (common)
-  "#d3deff", "#c0d1ff",                         // cool blue-white (hot stars)
-  "#fff3da", "#ffe6c4",                         // warm white → amber (cool stars)
+  "#ffffff", "#ffffff", "#ffffff", "#f3f6ff",
+  "#d3deff", "#c0d1ff",
+  "#fff3da", "#ffe6c4",
 ];
+
+// A concave four-point sparkle on a 24×24 grid.
+const SPARKLE =
+  "M12 0c.9 6.6 4.8 10.5 12 12-7.2 1.5-11.1 5.4-12 12-.9-6.6-4.8-10.5-12-12 7.2-1.5 11.1-5.4 12-12z";
 
 const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
-
-// 8-digit-hex alpha glow, scaled to the star's size and tinted to its colour.
-const glow = (size: number, color: string) =>
-  `0 0 ${(size * 1.6).toFixed(1)}px ${(size * 0.5).toFixed(1)}px ${color}59,` +
-  `0 0 ${(size * 3.6).toFixed(1)}px ${(size * 1.2).toFixed(1)}px ${color}2b`;
 
 interface LayerSpec {
   count: number;
@@ -28,22 +26,21 @@ interface LayerSpec {
   maxSize: number;
   minFloor: number; // twinkle opacity floor (how dark it dips)
   maxFloor: number;
-  glowChance: number;
   px: string;
   py: string;
   pdur: string;
 }
 
 const LAYERS: LayerSpec[] = [
-  // far: many tiny dim stars, barely drift, dip darkest
-  { count: 70, minSize: 0.8, maxSize: 1.6, minFloor: 0.18, maxFloor: 0.32, glowChance: 0, px: "5px", py: "7px", pdur: "120s" },
+  // far: many tiny dim sparkles, barely drift, dip darkest
+  { count: 70, minSize: 3, maxSize: 5, minFloor: 0.18, maxFloor: 0.32, px: "5px", py: "7px", pdur: "120s" },
   // mid
-  { count: 45, minSize: 1.4, maxSize: 2.4, minFloor: 0.34, maxFloor: 0.5, glowChance: 0.25, px: "13px", py: "16px", pdur: "80s" },
-  // near: fewer, bigger, brighter, faster, soft glow
-  { count: 22, minSize: 2.2, maxSize: 3.4, minFloor: 0.5, maxFloor: 0.7, glowChance: 1, px: "26px", py: "30px", pdur: "52s" },
+  { count: 45, minSize: 5, maxSize: 8, minFloor: 0.34, maxFloor: 0.5, px: "13px", py: "16px", pdur: "80s" },
+  // near: fewer, bigger, brighter, faster
+  { count: 22, minSize: 8, maxSize: 13, minFloor: 0.5, maxFloor: 0.7, px: "26px", py: "30px", pdur: "52s" },
 ];
 
-// A handful of hero stars carry diffraction spikes and barely twinkle.
+// A handful of hero sparkles sit larger and hold steady.
 const BRIGHT_COUNT = 7;
 
 interface Star {
@@ -55,61 +52,56 @@ interface Star {
   floor: number;
   tdur: string;
   tdelay: string;
-  glow: boolean;
   bright: boolean;
-  gdur?: string;
 }
 
 const makeStars = (spec: LayerSpec, seed: number): Star[] =>
-  Array.from({ length: spec.count }, (_, i) => {
-    const size = rand(spec.minSize, spec.maxSize);
-    return {
-      id: seed + i,
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`,
-      size,
-      color: pick(STAR_COLORS),
-      floor: rand(spec.minFloor, spec.maxFloor),
-      tdur: `${rand(2.6, 6).toFixed(2)}s`,
-      tdelay: `${(-Math.random() * 6).toFixed(2)}s`,
-      glow: Math.random() < spec.glowChance,
-      bright: false,
-    };
-  });
+  Array.from({ length: spec.count }, (_, i) => ({
+    id: seed + i,
+    top: `${Math.random() * 100}%`,
+    left: `${Math.random() * 100}%`,
+    size: rand(spec.minSize, spec.maxSize),
+    color: pick(STAR_COLORS),
+    floor: rand(spec.minFloor, spec.maxFloor),
+    tdur: `${rand(2.6, 6).toFixed(2)}s`,
+    tdelay: `${(-Math.random() * 6).toFixed(2)}s`,
+    bright: false,
+  }));
 
 const makeBrightStars = (seed: number): Star[] =>
-  Array.from({ length: BRIGHT_COUNT }, (_, i) => {
-    const size = rand(3, 4.2);
-    return {
-      id: seed + i,
-      top: `${rand(6, 88)}%`,
-      left: `${rand(4, 96)}%`,
-      size,
-      color: pick(STAR_COLORS),
-      floor: rand(0.72, 0.85), // hero stars hold steady
-      tdur: `${rand(5, 9).toFixed(2)}s`,
-      tdelay: `${(-Math.random() * 6).toFixed(2)}s`,
-      glow: true,
-      bright: true,
-      gdur: `${rand(5, 9).toFixed(2)}s`,
-    };
-  });
+  Array.from({ length: BRIGHT_COUNT }, (_, i) => ({
+    id: seed + i,
+    top: `${rand(6, 88)}%`,
+    left: `${rand(4, 96)}%`,
+    size: rand(15, 22),
+    color: pick(STAR_COLORS),
+    floor: rand(0.72, 0.85), // hero stars hold steady
+    tdur: `${rand(5, 9).toFixed(2)}s`,
+    tdelay: `${(-Math.random() * 6).toFixed(2)}s`,
+    bright: true,
+  }));
 
-const starStyle = (s: Star): CSSProperties =>
-  ({
-    top: s.top,
-    left: s.left,
-    width: `${s.size}px`,
-    height: `${s.size}px`,
-    backgroundColor: s.color,
-    boxShadow: s.glow ? glow(s.size, s.color) : undefined,
-    "--tmin": s.floor,
-    "--tdur": s.tdur,
-    "--tdelay": s.tdelay,
-    ...(s.bright
-      ? { "--sc": s.color, "--spike": `${Math.round(s.size * 7)}px`, "--gdur": s.gdur }
-      : {}),
-  } as CSSProperties);
+const Sparkle = ({ s }: { s: Star }) => (
+  <svg
+    className={`star-twinkle absolute${s.bright ? " star-bright" : ""}`}
+    style={
+      {
+        top: s.top,
+        left: s.left,
+        width: `${s.size}px`,
+        height: `${s.size}px`,
+        "--tmin": s.floor,
+        "--tdur": s.tdur,
+        "--tdelay": s.tdelay,
+      } as CSSProperties
+    }
+    viewBox="0 0 24 24"
+    fill={s.color}
+    aria-hidden="true"
+  >
+    <path d={SPARKLE} />
+  </svg>
+);
 
 // ---- Shooting stars: the one scheduled moment ----------------------------
 
@@ -194,21 +186,12 @@ export const StarsBackground = () => {
   // Generate once for the app's lifetime so positions don't jump on re-render.
   const layers = useMemo(
     () => LAYERS.map((spec, i) => ({ spec, stars: makeStars(spec, i * 1000) })),
-    []
+    [],
   );
   const brightStars = useMemo(() => makeBrightStars(9000), []);
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
-      {/* Moonlight washing the upper sky — the light source for everything below. */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(58% 42% at 50% 14%, rgba(216,225,255,0.18), rgba(210,220,255,0.06) 44%, transparent 70%)",
-        }}
-      />
-
       {layers.map(({ spec, stars }, li) => (
         <div
           key={li}
@@ -216,17 +199,11 @@ export const StarsBackground = () => {
           style={{ "--px": spec.px, "--py": spec.py, "--pdur": spec.pdur } as CSSProperties}
         >
           {stars.map((s) => (
-            <span key={s.id} className="star-twinkle absolute rounded-full" style={starStyle(s)} />
+            <Sparkle key={s.id} s={s} />
           ))}
-          {/* Hero stars live in the near layer so they drift with the foreground. */}
+          {/* Hero sparkles live in the near layer so they drift with the foreground. */}
           {li === LAYERS.length - 1 &&
-            brightStars.map((s) => (
-              <span
-                key={s.id}
-                className="star-twinkle star-bright absolute rounded-full"
-                style={starStyle(s)}
-              />
-            ))}
+            brightStars.map((s) => <Sparkle key={s.id} s={s} />)}
         </div>
       ))}
 

@@ -18,7 +18,7 @@ export default {
         // The night-sky gradient stops (kept in sync with App.tsx).
         sky: { 950: '#07071c', 900: '#0f0f30', 800: '#181747', 700: '#232255' },
         // Text ramp — light indigo on the deep sky. All ≥4.5:1 on panels.
-        ink: { DEFAULT: '#eceefe', soft: '#c3c9ef', mute: '#969ed0' },
+        ink: { DEFAULT: '#ffffff', soft: '#c3c9ef', mute: '#969ed0' },
         // Moonlight — the single warm accent.
         moon: { DEFAULT: '#ffe8a6', soft: '#f4dc9f' },
         cream: '#fef6e0',

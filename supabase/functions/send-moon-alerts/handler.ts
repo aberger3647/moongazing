@@ -14,7 +14,7 @@ export const FULL_MOON_TOLERANCE = 0.05;
 // Don't email the same alert more than once per lunar cycle (~29.5 days).
 export const RENOTIFY_DAYS = 25;
 // How far out to look for certified dark-sky places to suggest in the email.
-// 482803 m ≈ 300 miles — the same default the frontend's "Dark Sky Places"
+// 482803 m (about 300 miles), the same default the frontend's "Dark Sky Places"
 // list uses. The previous 50 km was tighter than even the smallest UI option
 // (100 mi) and, since only a few hundred such places exist worldwide, left the
 // email's nearby-places section empty for nearly every subscriber.
@@ -167,6 +167,7 @@ async function processAlert(
     places: (nearbyPlaces || []) as NearbyPlace[],
     unsubscribeToken: alert.unsubscribe_token || "",
     baseUrl,
+    today,
   });
 
   await deps.sendEmail({ to: user.email, subject, html });

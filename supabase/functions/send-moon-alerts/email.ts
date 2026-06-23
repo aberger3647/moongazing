@@ -13,12 +13,55 @@ function metersToMiles(meters: number): number {
   return Math.floor(meters * 0.000621371);
 }
 
+const WEEKDAYS = [
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+];
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+// Visual Crossing dates are calendar strings ("YYYY-MM-DD"); parse to a UTC date
+// so the day math below doesn't drift with the server's timezone.
+function parseYmd(s: string | undefined): Date | null {
+  const m = s ? /^(\d{4})-(\d{2})-(\d{2})/.exec(s) : null;
+  return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
+}
+
+function daysUntil(target: Date, today: Date): number {
+  const start = Date.UTC(
+    today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(),
+  );
+  return Math.round((target.getTime() - start) / 86_400_000);
+}
+
+// "Saturday, June 13": the date spelled out, no leading zeros.
+function formatFriendlyDate(s: string | undefined): string {
+  const d = parseYmd(s);
+  if (!d) return s ?? "";
+  return `${WEEKDAYS[d.getUTCDay()]}, ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+
+// A short phrase for when the optimal night falls relative to today, so the
+// heading reflects the real day instead of always claiming "tonight".
+function describeNight(s: string | undefined, today: Date): string {
+  const target = parseYmd(s);
+  if (!target) return "soon";
+  const days = daysUntil(target, today);
+  if (days <= 0) return "tonight";
+  if (days === 1) return "tomorrow night";
+  if (days <= 6) return `${WEEKDAYS[target.getUTCDay()]} night`;
+  return `on ${formatFriendlyDate(s)}`;
+}
+
 export interface BuildAlertEmailArgs {
   location: string;
   dayData: DayData;
   places: NearbyPlace[];
   unsubscribeToken: string;
   baseUrl: string;
+  /** The day the alert is sent, used to phrase how far off the optimal night is. */
+  today: Date;
 }
 
 export function buildAlertEmail({
@@ -27,9 +70,12 @@ export function buildAlertEmail({
   places,
   unsubscribeToken,
   baseUrl,
+  today,
 }: BuildAlertEmailArgs): { subject: string; html: string } {
   const titled = titleCase(location);
   const subject = `Moon Gazing Alert for ${titled}`;
+  const friendlyDate = formatFriendlyDate(dayData.datetime);
+  const when = describeNight(dayData.datetime, today);
 
   // Mirrors the site's dark celestial look (src/App.tsx night-sky gradient,
   // the gold full moon, and the cream-pill CTA). Inline styles + a table shell
@@ -78,7 +124,7 @@ export function buildAlertEmail({
   </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0f0f30;">
-  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #0f0f30; font-size: 1px; line-height: 1px;">A clear sky and a full moon over ${titled} on ${dayData.datetime}. 🌕</div>
+  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #0f0f30; font-size: 1px; line-height: 1px;">A clear sky and a full moon over ${titled} on ${friendlyDate}. 🌕</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0f0f30; background-image: linear-gradient(180deg, #07071c 0%, #0f0f30 42%, #181747 74%, #232255 100%);">
     <tr>
       <td align="center" style="padding: 32px 16px;">
@@ -91,14 +137,14 @@ export function buildAlertEmail({
           </tr>
           <tr>
             <td class="px" style="padding: 12px 40px 4px;">
-              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px;">Optimal moon gazing tonight 🌕</h2>
-              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">The full moon will be visible in <strong style="color: #ffffff;">${titled}</strong> on <strong style="color: #ffffff;">${dayData.datetime}</strong>.</p>
-              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0;">It's the perfect night to head outside — clear skies are forecast and the moon will be at its brightest.</p>
+              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px;">Optimal moon gazing ${when} 🌕</h2>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">The full moon will be visible in <strong style="color: #ffffff;">${titled}</strong> on <strong style="color: #ffffff;">${friendlyDate}</strong>.</p>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0;">It's the perfect night to head outside. Clear skies are forecast and the moon will be at its brightest.</p>
               ${placesBlock}
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 28px auto 8px;">
                 <tr>
                   <td align="center" bgcolor="#fefce8" style="border-radius: 9999px;">
-                    <a href="${baseUrl}" style="display: inline-block; padding: 14px 34px; font-family: ${font}; font-size: 16px; font-weight: 700; color: #3730a3; border-radius: 9999px;">See tonight's sky →</a>
+                    <a href="${baseUrl}" style="display: inline-block; padding: 14px 34px; font-family: ${font}; font-size: 16px; font-weight: 700; color: #3730a3; border-radius: 9999px;">See the forecast →</a>
                   </td>
                 </tr>
               </table>

@@ -5,29 +5,57 @@ import {
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { buildAlertEmail } from "./email.ts";
 
-Deno.test("buildAlertEmail subject and body title-case the location and embed the date", () => {
-  const { subject, html } = buildAlertEmail({
+// Convenience: render an email for a given optimal-night date and "today".
+// 2026-06-10 is a Wednesday, which the weekday-phrasing tests below rely on.
+function render(datetime: string, todayIso = "2026-06-10T00:00:00Z") {
+  return buildAlertEmail({
     location: "austin tx",
-    dayData: { datetime: "2026-06-10", moonphase: 0.5, conditions: "Clear" },
+    dayData: { datetime, moonphase: 0.5, conditions: "Clear" },
     places: [],
     unsubscribeToken: "tok-1",
     baseUrl: "https://moongaz.ing",
+    today: new Date(todayIso),
   });
+}
+
+Deno.test("buildAlertEmail subject and body title-case the location and spell out the date", () => {
+  const { subject, html } = render("2026-06-10");
   assertEquals(subject, "Moon Gazing Alert for Austin Tx");
   assertStringIncludes(html, "Austin Tx");
-  assertStringIncludes(html, "2026-06-10");
+  assertStringIncludes(html, "June 10");
   assertStringIncludes(html, "tok-1");
 });
 
+Deno.test("heading says 'tonight' only when the optimal night is today", () => {
+  assertStringIncludes(render("2026-06-10").html, "Optimal moon gazing tonight");
+});
+
+Deno.test("heading says 'tomorrow night' for the next day", () => {
+  const { html } = render("2026-06-11");
+  assertStringIncludes(html, "Optimal moon gazing tomorrow night");
+  assert(!html.includes("gazing tonight"));
+});
+
+Deno.test("heading names the weekday for a night later this week", () => {
+  // 2026-06-13 is a Saturday; the alert is generated Wed 2026-06-10.
+  const { html } = render("2026-06-13");
+  assertStringIncludes(html, "Optimal moon gazing Saturday night");
+  assert(!html.includes("gazing tonight"));
+});
+
+Deno.test("heading falls back to the full date a week out", () => {
+  // 7 days out lands on the same weekday as today, so spell the date instead.
+  const { html } = render("2026-06-17");
+  assertStringIncludes(html, "Optimal moon gazing on Wednesday, June 17");
+  assert(!html.includes("gazing tonight"));
+});
+
+Deno.test("email copy contains no em dashes", () => {
+  assert(!render("2026-06-13").html.includes("—"));
+});
+
 Deno.test("buildAlertEmail omits the nearby-places block when none are supplied", () => {
-  const { html } = buildAlertEmail({
-    location: "remote",
-    dayData: { datetime: "2026-06-10" },
-    places: [],
-    unsubscribeToken: "tok",
-    baseUrl: "https://x",
-  });
-  assert(!html.includes("Nearby Certified Dark Sky Places"));
+  assert(!render("2026-06-10").html.includes("Nearby Certified Dark Sky Places"));
 });
 
 Deno.test("buildAlertEmail lists nearby places with distance in whole miles", () => {
@@ -41,6 +69,7 @@ Deno.test("buildAlertEmail lists nearby places with distance in whole miles", ()
     ],
     unsubscribeToken: "tok",
     baseUrl: "https://moongaz.ing",
+    today: new Date("2026-06-10T00:00:00Z"),
   });
   assertStringIncludes(html, "Nearby Certified Dark Sky Places");
   assertStringIncludes(html, "Big Bend");
@@ -56,6 +85,7 @@ Deno.test("buildAlertEmail manage-alerts link includes baseUrl and token", () =>
     places: [],
     unsubscribeToken: "abc",
     baseUrl: "https://example.com",
+    today: new Date("2026-06-10T00:00:00Z"),
   });
   assertStringIncludes(
     html,
