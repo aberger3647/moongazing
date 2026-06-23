@@ -149,16 +149,17 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
           </tr>
           <tr>
             <td class="px" style="padding: 12px 40px 4px;">
-              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px;">You're all set 🌙</h2>
-              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">You'll be the first to know when the skies over <strong style="color: #ffffff;">${titledLocation}</strong> are clear for moon gazing.</p>
+              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px;">Alert Subscription Confirmed! 🌙</h2>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">You've been successfully subscribed to moon gazing alerts for <strong style="color: #ffffff;">${titledLocation}</strong>.</p>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">You'll receive emails when conditions are optimal for moon gazing, including:</p>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0;">
                 <tr>
                   <td style="background-color: #1b1b42; border: 1px solid #2f2f5c; border-radius: 10px; padding: 18px 20px;">
-                    <div style="font-family: ${font}; font-size: 12px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #a5b4fc; margin: 0 0 10px;">We'll email you when</div>
-                    <div style="font-family: ${font}; font-size: 15px; line-height: 2; color: #e6e9ff;">🌕&nbsp;&nbsp;The moon is full and bright<br>☁️&nbsp;&nbsp;Clear skies are in the forecast<br>🌌&nbsp;&nbsp;A certified dark sky place is nearby</div>
+                    <div style="font-family: ${font}; font-size: 15px; line-height: 2; color: #e6e9ff;">☁️&nbsp;&nbsp;Clear skies forecast<br>🌕&nbsp;&nbsp;Full moon visibility<br>🌌&nbsp;&nbsp;Nearby certified dark sky places</div>
                   </td>
                 </tr>
               </table>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0;">Thank you for joining the Moongaz.ing community!</p>
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 28px auto 8px;">
                 <tr>
                   <td align="center" bgcolor="#fefce8" style="border-radius: 9999px;">
@@ -204,10 +205,9 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
 
   return (
     <section className="panel animate-rise-in p-6 sm:p-8">
-      <h2 className="font-herculanum text-2xl sm:text-3xl">Get notified</h2>
+      <h2 className="font-herculanum text-2xl sm:text-3xl">Email Alerts</h2>
       <p className="mt-1.5 max-w-[52ch] text-ink-soft">
-        We'll email you when the moon and skies line up over {titleCase(location)}:
-        a bright moon, clear forecast, and dark-sky spots nearby. Nothing else.
+        Email me when moon-gazing conditions are optimal for {titleCase(location)}:
       </p>
       <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-3 sm:flex-row">
         <label htmlFor="alert-email" className="sr-only">

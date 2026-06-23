@@ -97,9 +97,6 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
         <h1 className="mt-6 font-herculanum text-5xl sm:text-6xl">
           Moongaz.ing
         </h1>
-        <p className="mt-3 max-w-md text-lg text-ink-soft">
-          Know when the night is worth looking up.
-        </p>
 
         <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[var(--panel-soft)] px-3.5 py-1.5 text-sm text-ink-soft">
           <span className="h-1.5 w-1.5 rounded-full bg-moon" aria-hidden="true" />

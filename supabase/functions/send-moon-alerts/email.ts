@@ -137,9 +137,9 @@ export function buildAlertEmail({
           </tr>
           <tr>
             <td class="px" style="padding: 12px 40px 4px;">
-              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px;">Optimal moon gazing ${when} 🌕</h2>
+              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px;">Optimal Moon Gazing ${when}! 🌕</h2>
               <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">The full moon will be visible in <strong style="color: #ffffff;">${titled}</strong> on <strong style="color: #ffffff;">${friendlyDate}</strong>.</p>
-              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0;">It's the perfect night to head outside. Clear skies are forecast and the moon will be at its brightest.</p>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0;">This is the perfect time to head out for some moongazing. Clear skies are forecasted, and the full moon will be at its brightest!</p>
               ${placesBlock}
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 28px auto 8px;">
                 <tr>
@@ -152,7 +152,7 @@ export function buildAlertEmail({
           </tr>
           <tr>
             <td class="px" style="padding: 24px 40px 36px; border-top: 1px solid #2b2a55;">
-              <p style="font-family: ${font}; font-size: 12px; line-height: 1.6; color: #8a90c4; margin: 0 0 10px; text-align: center;">You're receiving this because you have an active moon gazing alert.</p>
+              <p style="font-family: ${font}; font-size: 12px; line-height: 1.6; color: #8a90c4; margin: 0 0 10px; text-align: center;">You're receiving this email because you have an active moon gazing alert.</p>
               <p style="font-family: ${font}; font-size: 12px; line-height: 1.6; color: #8a90c4; margin: 0; text-align: center;">
                 <a href="${baseUrl}/manage-alerts?token=${unsubscribeToken}" style="color: #ffe8a6; text-decoration: none;">Update preferences</a>
                 &nbsp;•&nbsp;

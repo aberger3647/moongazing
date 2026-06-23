@@ -41,7 +41,7 @@ export const Unsubscribe = () => {
 
   return (
     <main className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col items-center justify-center px-5 py-16 text-center">
-      <h1 className="font-herculanum text-4xl tracking-display sm:text-5xl">Moongaz.ing</h1>
+      <h1 className="font-herculanum text-4xl tracking-display sm:text-5xl">Moon Gazing Alerts</h1>
 
       {status === "loading" && (
         <p className="mt-8 text-ink-soft">Processing your request…</p>
@@ -69,7 +69,7 @@ export const Unsubscribe = () => {
 
       <p className="mt-8">
         <a href="/" className="font-semibold text-moon hover:text-moon-soft">
-          Return home →
+          Return to home
         </a>
       </p>
     </main>

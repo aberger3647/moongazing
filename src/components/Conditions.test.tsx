@@ -25,7 +25,7 @@ describe("Conditions", () => {
     expect(screen.getByText("8%")).toBeInTheDocument();
     // toMiles(16, "km") -> Math.floor(16 * 0.621371) = 9
     expect(screen.getByText("Visibility")).toBeInTheDocument();
-    expect(screen.getByText("9 mi")).toBeInTheDocument();
+    expect(screen.getByText("9 miles")).toBeInTheDocument();
     expect(screen.getByText("Sunset")).toBeInTheDocument();
   });
 

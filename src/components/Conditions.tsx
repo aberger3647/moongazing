@@ -48,7 +48,7 @@ export const Conditions = ({ data }: ConditionsProps) => {
         </div>
         <div>
           <dt className="stat-label">Visibility</dt>
-          <dd className="stat-value mt-1.5">{visibility} mi</dd>
+          <dd className="stat-value mt-1.5">{visibility} miles</dd>
         </div>
         <div>
           <dt className="stat-label">Sunset</dt>

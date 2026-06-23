@@ -141,7 +141,7 @@ export const ManageAlerts = () => {
   return (
     <main className="mx-auto w-full max-w-2xl px-5 py-16 sm:py-20">
       <div className="text-center">
-        <h1 className="font-herculanum text-4xl sm:text-5xl">Manage alerts</h1>
+        <h1 className="font-herculanum text-4xl sm:text-5xl">Manage Alerts</h1>
         <p className="mt-2 text-ink-soft">Your moon-gazing notifications, in one place.</p>
       </div>
 
@@ -180,7 +180,7 @@ export const ManageAlerts = () => {
             <p className="text-ink-soft">You don't have any active alerts.</p>
             <p className="mt-4">
               <a href="/" className="font-semibold text-moon hover:text-moon-soft">
-                Return home →
+                Return to home
               </a>
             </p>
           </div>
@@ -231,7 +231,7 @@ export const ManageAlerts = () => {
 
             <p className="pt-2 text-center">
               <a href="/" className="font-semibold text-moon hover:text-moon-soft">
-                Return home →
+                Return to home
               </a>
             </p>
           </>

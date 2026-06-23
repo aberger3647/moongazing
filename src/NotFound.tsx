@@ -26,7 +26,7 @@ export const NotFound = () => {
         This page is below the horizon. Let&rsquo;s get you back under open sky.
       </p>
       <Link to="/" className="btn btn-primary mt-9">
-        Return home
+        Go Back Home
       </Link>
     </main>
   );

@@ -27,27 +27,27 @@ Deno.test("buildAlertEmail subject and body title-case the location and spell ou
 });
 
 Deno.test("heading says 'tonight' only when the optimal night is today", () => {
-  assertStringIncludes(render("2026-06-10").html, "Optimal moon gazing tonight");
+  assertStringIncludes(render("2026-06-10").html, "Optimal Moon Gazing tonight");
 });
 
 Deno.test("heading says 'tomorrow night' for the next day", () => {
   const { html } = render("2026-06-11");
-  assertStringIncludes(html, "Optimal moon gazing tomorrow night");
-  assert(!html.includes("gazing tonight"));
+  assertStringIncludes(html, "Optimal Moon Gazing tomorrow night");
+  assert(!html.includes("Gazing tonight"));
 });
 
 Deno.test("heading names the weekday for a night later this week", () => {
   // 2026-06-13 is a Saturday; the alert is generated Wed 2026-06-10.
   const { html } = render("2026-06-13");
-  assertStringIncludes(html, "Optimal moon gazing Saturday night");
-  assert(!html.includes("gazing tonight"));
+  assertStringIncludes(html, "Optimal Moon Gazing Saturday night");
+  assert(!html.includes("Gazing tonight"));
 });
 
 Deno.test("heading falls back to the full date a week out", () => {
   // 7 days out lands on the same weekday as today, so spell the date instead.
   const { html } = render("2026-06-17");
-  assertStringIncludes(html, "Optimal moon gazing on Wednesday, June 17");
-  assert(!html.includes("gazing tonight"));
+  assertStringIncludes(html, "Optimal Moon Gazing on Wednesday, June 17");
+  assert(!html.includes("Gazing tonight"));
 });
 
 Deno.test("email copy contains no em dashes", () => {
