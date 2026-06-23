@@ -132,6 +132,31 @@ Deno.test("sends an email and updates last_notified when a clear full-moon day i
   assert(typeof updateArgs.last_notified === "string");
 });
 
+Deno.test("queries nearby dark-sky places with the app's ~300-mile radius", async () => {
+  // Guards against regressing to a radius so tight the nearby-places section is
+  // empty for nearly every subscriber (the previous 50 km bug).
+  const { handler, supabaseCalls } = harness({
+    alertRows: [baseAlertRow()],
+    forecastDays: [
+      { datetime: "2026-06-12", moonphase: 0.5, conditions: "Clear" },
+    ],
+  });
+
+  await handler(req());
+
+  assertEquals(supabaseCalls.rpc.length, 1);
+  assertEquals(supabaseCalls.rpc[0].name, "get_places");
+  const args = supabaseCalls.rpc[0].args as {
+    p_lat: number;
+    p_lng: number;
+    p_radius: number;
+    p_limit_rows: number;
+  };
+  assertEquals(args.p_radius, 482803);
+  assertEquals(args.p_lat, 30.2);
+  assertEquals(args.p_lng, -97.7);
+});
+
 Deno.test("skips the email when last_notified is within the renotify window", async () => {
   const fiveDaysAgo = new Date(fixedNow().getTime() - 5 * 86400_000).toISOString();
   const { handler, sendEmail } = harness({
@@ -229,4 +254,54 @@ Deno.test("one alert's error does not stop the loop from processing the next", a
   } finally {
     console.error = errSpy;
   }
+});
+
+Deno.test("scopes the alerts query to one alert when a token is supplied", async () => {
+  const { handler, sendEmail, supabaseCalls } = harness({
+    alertRows: [baseAlertRow()],
+    forecastDays: [
+      { datetime: "2026-06-12", moonphase: 0.5, conditions: "Clear" },
+    ],
+  });
+
+  const res = await handler(
+    makeRequest("POST", "https://example.com/send-moon-alerts", {
+      token: "tok-1",
+    }),
+  );
+  assertEquals(res.status, 200);
+
+  // The read query should have filtered on the supplied unsubscribe_token...
+  const readCall = supabaseCalls.from.find((c) =>
+    c.table === "alerts" && c.ops.some((o) => o.method === "select")
+  )!;
+  assert(
+    readCall.ops.some((o) =>
+      o.method === "eq" && o.args[0] === "unsubscribe_token" &&
+      o.args[1] === "tok-1"
+    ),
+  );
+  // ...and the matched alert is still evaluated and emailed like normal.
+  assertEquals(sendEmail.calls.length, 1);
+});
+
+Deno.test("does not filter by token for the cron call (no request body)", async () => {
+  const { handler, supabaseCalls } = harness({
+    alertRows: [baseAlertRow()],
+    forecastDays: [
+      { datetime: "2026-06-12", moonphase: 0.5, conditions: "Clear" },
+    ],
+  });
+
+  await handler(req());
+
+  const readCall = supabaseCalls.from.find((c) =>
+    c.table === "alerts" && c.ops.some((o) => o.method === "select")
+  )!;
+  assertEquals(
+    readCall.ops.some((o) =>
+      o.method === "eq" && o.args[0] === "unsubscribe_token"
+    ),
+    false,
+  );
 });

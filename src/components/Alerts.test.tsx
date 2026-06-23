@@ -8,6 +8,7 @@ const { mocks } = vi.hoisted(() => ({
     singleResults: [] as Array<{ data: unknown; error: unknown }>,
     fromCalls: [] as string[],
     sendEmail: vi.fn(),
+    triggerMoonAlertCheck: vi.fn(),
   },
 }));
 
@@ -37,7 +38,11 @@ vi.mock("../supabaseClient", () => {
 
 vi.mock("../utils", async () => {
   const actual = await vi.importActual<typeof import("../utils")>("../utils");
-  return { ...actual, sendEmail: mocks.sendEmail };
+  return {
+    ...actual,
+    sendEmail: mocks.sendEmail,
+    triggerMoonAlertCheck: mocks.triggerMoonAlertCheck,
+  };
 });
 
 import { Alerts } from "./Alerts";
@@ -47,6 +52,8 @@ beforeEach(() => {
   mocks.fromCalls = [];
   mocks.sendEmail.mockReset();
   mocks.sendEmail.mockResolvedValue({ success: true });
+  mocks.triggerMoonAlertCheck.mockReset();
+  mocks.triggerMoonAlertCheck.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -96,6 +103,10 @@ describe("Alerts", () => {
     expect(arg.to).toBe("hi@example.com");
     expect(arg.subject).toContain("Austin Tx");
     expect(arg.html).toContain("tok-xyz");
+
+    // A fresh signup triggers an immediate moon-alert check for this alert so
+    // the user isn't left waiting for the next daily cron run.
+    expect(mocks.triggerMoonAlertCheck).toHaveBeenCalledWith("tok-xyz");
   });
 
   it("short-circuits with a friendly message when an alert already exists", async () => {
@@ -115,6 +126,7 @@ describe("Alerts", () => {
     );
 
     expect(mocks.sendEmail).not.toHaveBeenCalled();
+    expect(mocks.triggerMoonAlertCheck).not.toHaveBeenCalled();
   });
 
   it("surfaces an error message when a Supabase write fails", async () => {
@@ -131,5 +143,6 @@ describe("Alerts", () => {
       expect(screen.getByText(/Error subscribing/i)).toBeInTheDocument(),
     );
     expect(mocks.sendEmail).not.toHaveBeenCalled();
+    expect(mocks.triggerMoonAlertCheck).not.toHaveBeenCalled();
   });
 });

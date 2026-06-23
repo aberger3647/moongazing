@@ -30,11 +30,12 @@ Deno.test("buildAlertEmail omits the nearby-places block when none are supplied"
   assert(!html.includes("Nearby Certified Dark Sky Places"));
 });
 
-Deno.test("buildAlertEmail lists nearby places with km distance to one decimal", () => {
+Deno.test("buildAlertEmail lists nearby places with distance in whole miles", () => {
   const { html } = buildAlertEmail({
     location: "austin tx",
     dayData: { datetime: "2026-06-10" },
     places: [
+      // distances are meters from the get_places RPC; rendered as floored miles
       { place_name: "Big Bend", category: "Park", distance: 12345 },
       { place_name: "Enchanted Rock", category: "Park", distance: 50000 },
     ],
@@ -43,9 +44,9 @@ Deno.test("buildAlertEmail lists nearby places with km distance to one decimal",
   });
   assertStringIncludes(html, "Nearby Certified Dark Sky Places");
   assertStringIncludes(html, "Big Bend");
-  assertStringIncludes(html, "12.3 km away");
+  assertStringIncludes(html, "7 miles away");
   assertStringIncludes(html, "Enchanted Rock");
-  assertStringIncludes(html, "50.0 km away");
+  assertStringIncludes(html, "31 miles away");
 });
 
 Deno.test("buildAlertEmail manage-alerts link includes baseUrl and token", () => {

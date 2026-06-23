@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { sendEmail } from "../utils";
+import { sendEmail, triggerMoonAlertCheck } from "../utils";
 import { supabase } from "../supabaseClient";
 import { titleCase } from "../utils";
 
@@ -95,45 +95,97 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
       if (alertError) throw alertError;
 
       const unsubscribeToken = alertData?.unsubscribe_token;
-      const unsubscribeLink = unsubscribeToken 
+
+      // Evaluate this brand-new alert immediately so the subscriber gets the
+      // moon alert right away if the upcoming full moon is clear, instead of
+      // waiting for the next daily cron run. Fire-and-forget — it's throttled
+      // server-side and must not delay or break the signup flow.
+      if (unsubscribeToken) {
+        void triggerMoonAlertCheck(unsubscribeToken);
+      }
+
+      const unsubscribeLink = unsubscribeToken
         ? `${window.location.origin}/unsubscribe?token=${unsubscribeToken}`
         : '';
       const manageAlertsLink = unsubscribeToken
         ? `${window.location.origin}/manage-alerts?token=${unsubscribeToken}`
         : '';
 
-      // Send confirmation email
+      // Send confirmation email — same dark celestial look as the site and the
+      // alert email (supabase/functions/send-moon-alerts/email.ts). The site's
+      // custom fonts can't load in mail, so we fall back to Quicksand → system.
+      const titledLocation = titleCase(location);
+      const font =
+        "'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
+  <title>Moon Gazing Alerts</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+    body { margin: 0 !important; padding: 0 !important; background-color: #0f0f30; }
+    a { text-decoration: none; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 24px !important; padding-right: 24px !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0f0f30;">
+  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #0f0f30; font-size: 1px; line-height: 1px;">You're subscribed to moon gazing alerts for ${titledLocation}. 🌙</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0f0f30; background-image: linear-gradient(180deg, #07071c 0%, #0f0f30 42%, #181747 74%, #232255 100%);">
+    <tr>
+      <td align="center" style="padding: 32px 16px;">
+        <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 600px; max-width: 600px; background-color: #13132e; border: 1px solid #2b2a55; border-radius: 16px; overflow: hidden;">
+          <tr>
+            <td class="px" align="center" style="padding: 44px 40px 12px;">
+              <div style="width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%; background-color: #ffe8a6; background-image: radial-gradient(circle at 36% 30%, #fff7df 0%, #ffe8a6 50%, #f4dc9f 100%); box-shadow: 0 0 28px rgba(255, 232, 166, 0.45), 0 0 56px rgba(255, 232, 166, 0.22);"></div>
+              <div style="font-family: ${font}; font-size: 32px; font-weight: 600; letter-spacing: 0.5px; color: #f3f2ff;">Moongaz.ing</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="px" style="padding: 12px 40px 4px;">
+              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px;">You're all set 🌙</h2>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">You'll be the first to know when the skies over <strong style="color: #ffffff;">${titledLocation}</strong> are clear for moon gazing.</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0;">
+                <tr>
+                  <td style="background-color: #1b1b42; border-left: 4px solid #ffe8a6; border-radius: 10px; padding: 18px 20px;">
+                    <div style="font-family: ${font}; font-size: 12px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #a5b4fc; margin: 0 0 10px;">We'll email you when</div>
+                    <div style="font-family: ${font}; font-size: 15px; line-height: 2; color: #e6e9ff;">🌕&nbsp;&nbsp;The moon is full and bright<br>☁️&nbsp;&nbsp;Clear skies are in the forecast<br>🌌&nbsp;&nbsp;A certified dark sky place is nearby</div>
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 28px auto 8px;">
+                <tr>
+                  <td align="center" bgcolor="#fefce8" style="border-radius: 9999px;">
+                    <a href="${window.location.origin}" style="display: inline-block; padding: 14px 34px; font-family: ${font}; font-size: 16px; font-weight: 700; color: #3730a3; border-radius: 9999px;">Visit Moongaz.ing →</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td class="px" style="padding: 24px 40px 36px; border-top: 1px solid #2b2a55; text-align: center;">
+              ${manageAlertsLink ? `<p style="font-family: ${font}; font-size: 12px; line-height: 1.6; color: #8a90c4; margin: 0 0 8px;"><a href="${manageAlertsLink}" style="color: #ffe8a6; text-decoration: none;">Manage all your alerts</a></p>` : ''}
+              ${unsubscribeLink ? `<p style="font-family: ${font}; font-size: 12px; line-height: 1.6; color: #8a90c4; margin: 0 0 8px;"><a href="${unsubscribeLink}" style="color: #ffe8a6; text-decoration: none;">Unsubscribe from ${titledLocation}</a></p>` : ''}
+              <p style="font-family: ${font}; font-size: 12px; line-height: 1.6; color: #8a90c4; margin: 0;"><a href="${window.location.origin}" style="color: #ffe8a6; text-decoration: none;">Visit Moongaz.ing</a></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
       const emailResult = await sendEmail({
         to: email,
-        subject: `Moon Gazing Alert Subscription for ${titleCase(location)}`,
-        html: `
-          <div style="font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px;">
-            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-              <div style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%); color: #ffffff; padding: 40px 20px; text-align: center;">
-                <h1 style="font-family: 'Herculanum', serif; font-size: 36px; margin: 0; font-weight: normal;">Moongaz.ing</h1>
-              </div>
-              <div style="padding: 30px 20px;">
-                <h2 style="font-family: 'Herculanum', serif; font-size: 24px; color: #1e1b4b; margin-top: 0;">Alert Subscription Confirmed! 🌙</h2>
-                <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 15px 0;">You've been successfully subscribed to moon gazing alerts for:</p>
-                <div style="background-color: #f5f3ff; border-left: 4px solid #3730a3; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                  <strong style="color: #1e1b4b; font-size: 18px;">${titleCase(location)}</strong>
-                </div>
-                <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 15px 0;">You'll receive emails when conditions are optimal for moon gazing, including:</p>
-                <ul style="color: #4b5563; font-size: 16px; line-height: 1.8;">
-                  <li>Clear skies forecast</li>
-                  <li>Full moon visibility</li>
-                  <li>Nearby certified dark sky places</li>
-                </ul>
-                <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 15px 0;">Thank you for joining the Moongaz.ing community!</p>
-              </div>
-              <div style="background-color: #f5f3ff; padding: 20px; text-align: center; font-size: 12px; color: #8b8b8b; border-top: 1px solid #e0d9ff;">
-                ${manageAlertsLink ? `<p style="margin: 8px 0;"><a href="${manageAlertsLink}" style="color: #3730a3; text-decoration: none;">Manage all your alerts</a></p>` : ''}
-                ${unsubscribeLink ? `<p style="margin: 8px 0;"><a href="${unsubscribeLink}" style="color: #3730a3; text-decoration: none;">Unsubscribe from ${titleCase(location)}</a></p>` : ''}
-                <p style="margin: 8px 0;"><a href="${window.location.origin}" style="color: #3730a3; text-decoration: none;">Visit Moongaz.ing</a></p>
-              </div>
-            </div>
-          </div>
-        `,
+        subject: `Moon Gazing Alert Subscription for ${titledLocation}`,
+        html,
       });
 
       if (emailResult.success) {

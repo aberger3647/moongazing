@@ -13,6 +13,13 @@ import {
 export const FULL_MOON_TOLERANCE = 0.05;
 // Don't email the same alert more than once per lunar cycle (~29.5 days).
 export const RENOTIFY_DAYS = 25;
+// How far out to look for certified dark-sky places to suggest in the email.
+// 482803 m ≈ 300 miles — the same default the frontend's "Dark Sky Places"
+// list uses. The previous 50 km was tighter than even the smallest UI option
+// (100 mi) and, since only a few hundred such places exist worldwide, left the
+// email's nearby-places section empty for nearly every subscriber.
+export const NEARBY_RADIUS_METERS = 482803;
+export const NEARBY_PLACES_LIMIT = 5;
 
 interface LocationRow {
   lat?: number;
@@ -43,15 +50,37 @@ export interface SendAlertDeps {
   now?: () => Date;
 }
 
+// Best-effort: pull an alert's `unsubscribe_token` out of the request body to
+// scope the run to a single alert. Returns null for the daily cron call (which
+// sends no token) or any body that isn't JSON / lacks a usable token, so those
+// fall through to evaluating every active alert.
+async function readAlertToken(req: Request): Promise<string | null> {
+  try {
+    const body = await req.json();
+    const token = body?.token;
+    return typeof token === "string" && token.length > 0 ? token : null;
+  } catch {
+    return null;
+  }
+}
+
 // Pulls active alerts, evaluates a moon-gazing forecast for each, and sends
 // emails for any alert with a clear full-moon day in the next week (subject
 // to the renotify throttle). One alert's failure must not affect the others.
+//
+// Single-alert mode: when the request body carries an alert's
+// `unsubscribe_token`, only that one alert is evaluated. The frontend uses this
+// the moment a user subscribes so a fresh signup gets the moon alert right away
+// (if the upcoming full moon is clear) instead of waiting for the next daily
+// cron run. The daily pg_cron call sends no token and processes every alert.
 export function createHandler(deps: SendAlertDeps) {
   const baseUrl = deps.baseUrl ?? "https://moongaz.ing";
   const now = deps.now ?? (() => new Date());
 
-  return async (_req: Request): Promise<Response> => {
-    const { data: alerts, error } = await deps.supabase
+  return async (req: Request): Promise<Response> => {
+    const token = await readAlertToken(req);
+
+    let query = deps.supabase
       .from("alerts")
       .select(`
         id,
@@ -63,6 +92,9 @@ export function createHandler(deps: SendAlertDeps) {
         user_locations(lat, lng, location_name)
       `)
       .eq("active", true);
+    if (token) query = query.eq("unsubscribe_token", token);
+
+    const { data: alerts, error } = await query;
 
     if (error) {
       console.error("Supabase fetch alerts error:", error);
@@ -125,8 +157,8 @@ async function processAlert(
   const { data: nearbyPlaces } = await deps.supabase.rpc("get_places", {
     p_lat: lat,
     p_lng: lng,
-    p_radius: 50000,
-    p_limit_rows: 5,
+    p_radius: NEARBY_RADIUS_METERS,
+    p_limit_rows: NEARBY_PLACES_LIMIT,
   });
 
   const { subject, html } = buildAlertEmail({
