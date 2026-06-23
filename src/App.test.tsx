@@ -34,7 +34,7 @@ describe("App background reacts to location changes", () => {
   it("updates cloud density when a new location has different cloud cover", async () => {
     const { container } = render(<App />);
     const input = screen.getByPlaceholderText("City");
-    const submit = screen.getByRole("button", { name: /submit/i });
+    const submit = screen.getByRole("button", { name: /search/i });
 
     // First location: heavy cloud cover -> round(90/100 * 8) = 7 puffs.
     mockedGetConditions.mockResolvedValueOnce(conditionsFor("Seattle, WA", 90));
@@ -53,7 +53,7 @@ describe("App background reacts to location changes", () => {
   it("clears clouds when a new location is completely clear", async () => {
     const { container } = render(<App />);
     const input = screen.getByPlaceholderText("City");
-    const submit = screen.getByRole("button", { name: /submit/i });
+    const submit = screen.getByRole("button", { name: /search/i });
 
     mockedGetConditions.mockResolvedValueOnce(conditionsFor("London, UK", 100));
     await userEvent.type(input, "London");

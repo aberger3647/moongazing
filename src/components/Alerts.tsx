@@ -153,7 +153,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
               <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">You'll be the first to know when the skies over <strong style="color: #ffffff;">${titledLocation}</strong> are clear for moon gazing.</p>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0;">
                 <tr>
-                  <td style="background-color: #1b1b42; border-left: 4px solid #ffe8a6; border-radius: 10px; padding: 18px 20px;">
+                  <td style="background-color: #1b1b42; border: 1px solid #2f2f5c; border-radius: 10px; padding: 18px 20px;">
                     <div style="font-family: ${font}; font-size: 12px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #a5b4fc; margin: 0 0 10px;">We'll email you when</div>
                     <div style="font-family: ${font}; font-size: 15px; line-height: 2; color: #e6e9ff;">🌕&nbsp;&nbsp;The moon is full and bright<br>☁️&nbsp;&nbsp;Clear skies are in the forecast<br>🌌&nbsp;&nbsp;A certified dark sky place is nearby</div>
                   </td>
@@ -203,33 +203,35 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
   };
 
   return (
-    <>
-      <h2 className="font-herculanum text-3xl mb-3">Email Alerts</h2>
-      <div className="flex flex-col items-center space-y-4">
-        <p className="text-center">
-          Email me when moon-gazing conditions are optimal for{" "}
-          {titleCase(location)}:
+    <section className="panel animate-rise-in p-6 sm:p-8">
+      <h2 className="font-herculanum text-2xl sm:text-3xl">Get notified</h2>
+      <p className="mt-1.5 max-w-[52ch] text-ink-soft">
+        We'll email you when the moon and skies line up over {titleCase(location)}:
+        a bright moon, clear forecast, and dark-sky spots nearby. Nothing else.
+      </p>
+      <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <label htmlFor="alert-email" className="sr-only">
+          Email address
+        </label>
+        <input
+          id="alert-email"
+          type="email"
+          name="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="hello@email.com"
+          className="input sm:flex-1"
+          required
+        />
+        <button type="submit" disabled={loading} className="btn btn-primary shrink-0">
+          {loading ? "Sending…" : "Subscribe"}
+        </button>
+      </form>
+      {message && (
+        <p ref={messageRef} role="status" className="mt-3 text-sm text-ink-soft">
+          {message}
         </p>
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-4 items-center">
-          <input
-            type="email"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="hello@email.com"
-            className="text-indigo-950 py-2 px-4 bg-indigo-100 rounded-xl"
-            required
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="font-herculanum text-xl bg-yellow-50 text-indigo-800 py-2 px-4 w-32 rounded-full disabled:opacity-50"
-          >
-            {loading ? "Sending..." : "Subscribe"}
-          </button>
-        </form>
-        {message && <p ref={messageRef} className="text-center text-sm text-white -mt-3">{message}</p>}
-      </div>
-    </>
+      )}
+    </section>
   );
 };

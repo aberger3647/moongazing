@@ -52,7 +52,7 @@ export function buildAlertEmail({
     placesBlock = `
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 24px 0;">
                 <tr>
-                  <td style="background-color: #1b1b42; border-left: 4px solid #ffe8a6; border-radius: 10px; padding: 18px 20px;">
+                  <td style="background-color: #1b1b42; border: 1px solid #2f2f5c; border-radius: 10px; padding: 18px 20px;">
                     <div style="font-family: ${font}; font-size: 16px; font-weight: 600; color: #ffe8a6; margin: 0 0 6px;">🌌 Nearby Certified Dark Sky Places</div>${rows}
                   </td>
                 </tr>

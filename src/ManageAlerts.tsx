@@ -139,35 +139,48 @@ export const ManageAlerts = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-900 to-indigo-900 p-4">
-      <div className="max-w-2xl w-full">
-        <h1 className="font-herculanum text-4xl mb-8 text-yellow-50 text-center">Manage Alerts</h1>
+    <main className="mx-auto w-full max-w-2xl px-5 py-16 sm:py-20">
+      <div className="text-center">
+        <h1 className="font-herculanum text-4xl sm:text-5xl">Manage alerts</h1>
+        <p className="mt-2 text-ink-soft">Your moon-gazing notifications, in one place.</p>
+      </div>
 
+      <div className="mt-10 space-y-4">
         {loading && (
-          <div className="text-lg text-indigo-100 text-center">
-            Loading your alerts...
-          </div>
+          <ul aria-hidden="true" className="space-y-3">
+            {[0, 1].map((i) => (
+              <li key={i} className="panel flex items-center justify-between gap-4 p-4">
+                <div className="w-full space-y-2">
+                  <div className="skel h-4 w-1/3" />
+                  <div className="skel h-3 w-16" />
+                </div>
+                <div className="skel h-9 w-28 shrink-0 rounded-full" />
+              </li>
+            ))}
+            <li className="sr-only">Loading your alerts…</li>
+          </ul>
         )}
 
         {error && (
-          <div className="bg-red-900 bg-opacity-50 border border-red-500 rounded-lg p-6 mb-6">
-            <p className="text-xl text-red-100 mb-2">✗ Error</p>
-            <p className="text-indigo-100">{error}</p>
+          <div className="verdict is-poor panel flex items-start gap-3 p-5">
+            <span className="verdict-dot mt-1.5" aria-hidden="true" />
+            <p className="text-ink">{error}</p>
           </div>
         )}
 
         {message && (
-          <div className="bg-green-900 bg-opacity-50 border border-green-500 rounded-lg p-6 mb-6">
-            <p className="text-indigo-100">{message}</p>
-          </div>
+          <p className="verdict is-good flex items-center justify-center gap-2 text-sm font-medium">
+            <span className="verdict-dot" aria-hidden="true" />
+            <span className="text-ink">{message}</span>
+          </p>
         )}
 
         {!loading && alerts.length === 0 && !error && (
-          <div className="bg-indigo-900 bg-opacity-50 border border-indigo-500 rounded-lg p-6 text-center">
-            <p className="text-indigo-100">You don't have any active alerts.</p>
-            <p className="text-indigo-100 mt-4">
-              <a href="/" className="text-yellow-50 hover:text-yellow-100 underline">
-                Return to home
+          <div className="panel p-8 text-center">
+            <p className="text-ink-soft">You don't have any active alerts.</p>
+            <p className="mt-4">
+              <a href="/" className="font-semibold text-moon hover:text-moon-soft">
+                Return home →
               </a>
             </p>
           </div>
@@ -175,51 +188,55 @@ export const ManageAlerts = () => {
 
         {!loading && alerts.length > 0 && (
           <>
-            <div className="space-y-4 mb-6">
+            <ul className="space-y-3">
               {alerts.map((alert) => (
-                <div
+                <li
                   key={alert.id}
-                  className="bg-indigo-900 bg-opacity-50 border border-indigo-500 rounded-lg p-4 flex justify-between items-center"
+                  className="panel flex items-center justify-between gap-4 p-4 pl-5"
                 >
-                  <div>
-                    <p className="text-indigo-100 font-semibold">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-ink">
                       {titleCase(alert.location_name)}
                     </p>
-                    <p className="text-indigo-300 text-sm">
+                    <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-mute">
+                      <span
+                        className="h-1.5 w-1.5 rounded-full bg-verdict-good"
+                        aria-hidden="true"
+                      />
                       {alert.active ? "Active" : "Inactive"}
                     </p>
                   </div>
                   <button
                     onClick={() => handleUnsubscribe(alert.id)}
                     disabled={unsubscribingIds.has(alert.id)}
-                    className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-yellow-50 px-4 py-2 rounded-lg transition"
+                    className="btn btn-ghost shrink-0 px-4 py-2 text-sm"
                   >
-                    {unsubscribingIds.has(alert.id) ? "Unsubscribing..." : "Unsubscribe"}
+                    {unsubscribingIds.has(alert.id) ? "Unsubscribing…" : "Unsubscribe"}
                   </button>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
 
             {alerts.length > 1 && (
-              <div className="text-center mb-6">
+              <div className="pt-2 text-center">
                 <button
                   onClick={handleUnsubscribeAll}
                   disabled={unsubscribingAll}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-yellow-50 px-6 py-2 rounded-lg transition"
+                  className="btn btn-ghost px-5 py-2 text-sm"
                 >
-                  {unsubscribingAll ? "Unsubscribing..." : "Unsubscribe from All"}
+                  {unsubscribingAll ? "Unsubscribing…" : "Unsubscribe from All"}
                 </button>
               </div>
             )}
 
-            <p className="text-indigo-100 text-center">
-              <a href="/" className="text-yellow-50 hover:text-yellow-100 underline">
-                Return to home
+            <p className="pt-2 text-center">
+              <a href="/" className="font-semibold text-moon hover:text-moon-soft">
+                Return home →
               </a>
             </p>
           </>
         )}
       </div>
-    </div>
+    </main>
   );
 };

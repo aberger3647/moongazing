@@ -4,7 +4,7 @@ import { Conditions } from "./Conditions";
 import { makeVisualCrossing } from "../test/fixtures";
 
 describe("Conditions", () => {
-  it("renders description, cloud cover, precipitation, formatted sunset and visibility", () => {
+  it("renders the description and every metric with its value", () => {
     const data = makeVisualCrossing({
       description: "Clear with a chance of bats.",
       currentConditions: {
@@ -18,10 +18,30 @@ describe("Conditions", () => {
     render(<Conditions data={data} />);
 
     expect(screen.getByText("Clear with a chance of bats.")).toBeInTheDocument();
-    expect(screen.getByText(/Cloud Cover: 12%/)).toBeInTheDocument();
-    expect(screen.getByText(/Precipitation: 8%/)).toBeInTheDocument();
+
+    expect(screen.getByText("Cloud cover")).toBeInTheDocument();
+    expect(screen.getByText("12%")).toBeInTheDocument();
+    expect(screen.getByText("Precipitation")).toBeInTheDocument();
+    expect(screen.getByText("8%")).toBeInTheDocument();
     // toMiles(16, "km") -> Math.floor(16 * 0.621371) = 9
-    expect(screen.getByText(/Visibility: 9 miles/)).toBeInTheDocument();
-    expect(screen.getByText(/Sunset:/)).toBeInTheDocument();
+    expect(screen.getByText("Visibility")).toBeInTheDocument();
+    expect(screen.getByText("9 mi")).toBeInTheDocument();
+    expect(screen.getByText("Sunset")).toBeInTheDocument();
+  });
+
+  it("gives a clear-sky night a 'great viewing' verdict", () => {
+    const data = makeVisualCrossing({
+      currentConditions: { sunset: "20:30:00", visibility: 16, cloudcover: 10, precipprob: 5 },
+    });
+    render(<Conditions data={data} />);
+    expect(screen.getByText(/great viewing/i)).toBeInTheDocument();
+  });
+
+  it("calls an overcast, rainy night 'poor viewing'", () => {
+    const data = makeVisualCrossing({
+      currentConditions: { sunset: "20:30:00", visibility: 4, cloudcover: 90, precipprob: 80 },
+    });
+    render(<Conditions data={data} />);
+    expect(screen.getByText(/poor viewing/i)).toBeInTheDocument();
   });
 });

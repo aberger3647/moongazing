@@ -40,36 +40,38 @@ export const Unsubscribe = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-900 to-indigo-900">
-      <div className="text-center px-4">
-        <h1 className="font-herculanum text-4xl mb-6 text-yellow-50">Moon Gazing Alerts</h1>
-        
-        {status === "loading" && (
-          <div className="text-lg text-indigo-100">
-            Processing your request...
-          </div>
-        )}
+    <main className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col items-center justify-center px-5 py-16 text-center">
+      <h1 className="font-herculanum text-4xl tracking-display sm:text-5xl">Moongaz.ing</h1>
 
-        {status === "success" && (
-          <div className="bg-green-900 bg-opacity-50 border border-green-500 rounded-lg p-6 max-w-md mx-auto">
-            <p className="text-xl text-green-100 mb-4">✓ Success</p>
-            <p className="text-indigo-100">{message}</p>
-          </div>
-        )}
+      {status === "loading" && (
+        <p className="mt-8 text-ink-soft">Processing your request…</p>
+      )}
 
-        {status === "error" && (
-          <div className="bg-red-900 bg-opacity-50 border border-red-500 rounded-lg p-6 max-w-md mx-auto">
-            <p className="text-xl text-red-100 mb-4">✗ Error</p>
-            <p className="text-indigo-100">{message}</p>
+      {status === "success" && (
+        <div className="verdict is-good panel mt-8 w-full p-7 text-left">
+          <div className="flex items-center gap-3">
+            <span className="verdict-dot" aria-hidden="true" />
+            <h2 className="font-herculanum text-2xl">You're unsubscribed</h2>
           </div>
-        )}
+          <p className="mt-3 text-ink-soft">{message}</p>
+        </div>
+      )}
 
-        <p className="text-indigo-100 mt-8">
-          <a href="/" className="text-yellow-50 hover:text-yellow-100 underline">
-            Return to home
-          </a>
-        </p>
-      </div>
-    </div>
+      {status === "error" && (
+        <div className="verdict is-poor panel mt-8 w-full p-7 text-left">
+          <div className="flex items-center gap-3">
+            <span className="verdict-dot" aria-hidden="true" />
+            <h2 className="font-herculanum text-2xl">Something went wrong</h2>
+          </div>
+          <p className="mt-3 text-ink-soft">{message}</p>
+        </div>
+      )}
+
+      <p className="mt-8">
+        <a href="/" className="font-semibold text-moon hover:text-moon-soft">
+          Return home →
+        </a>
+      </p>
+    </main>
   );
 };
