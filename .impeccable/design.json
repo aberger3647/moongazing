@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-24T00:00:00Z",
+  "title": "Design System: Moongaz.ing",
+  "extensions": {
+    "colorMeta": {
+      "moon": {
+        "role": "primary",
+        "displayName": "Moonlight Gold",
+        "canonical": "#ffe8a6",
+        "tonalRamp": ["#3d3015", "#6b5526", "#997a37", "#c79f48", "#f4c45a", "#ffe8a6", "#fff1c6", "#fffae6"]
+      },
+      "cream": {
+        "role": "primary",
+        "displayName": "Cream (CTA Face)",
+        "canonical": "#fefce8",
+        "tonalRamp": ["#33310a", "#5c5817", "#857f24", "#aea636", "#d7cd5a", "#f5ec9e", "#fcf8cf", "#fffef0"]
+      },
+      "sky-deep": {
+        "role": "neutral",
+        "displayName": "Night Sky (gradient)",
+        "canonical": "#07071c",
+        "tonalRamp": ["#07071c", "#0f0f30", "#181747", "#232255", "#34336e", "#4a4a93", "#7c84c4", "#c3c9ef"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink (white text ramp)",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#1a1a2e", "#3a3a55", "#5c5c7d", "#7f87b5", "#969ed0", "#c3c9ef", "#e7eaf8", "#ffffff"]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Instrument Glass",
+        "canonical": "rgba(20,21,51,0.62)"
+      },
+      "status-error": {
+        "role": "tertiary",
+        "displayName": "Error Red",
+        "canonical": "#ef4444"
+      },
+      "status-success": {
+        "role": "tertiary",
+        "displayName": "Success Green",
+        "canonical": "#22c55e"
+      }
+    },
+    "shadows": [
+      { "name": "panel-lift", "value": "0 22px 50px -28px rgba(0,0,0,0.85)", "purpose": "The single deep, soft shadow that floats every instrument panel off the sky." },
+      { "name": "cta-glow", "value": "0 0 30px rgba(255,232,166,0.45), 0 0 70px rgba(255,232,166,0.18)", "purpose": "Moonlight glow on the primary button hover only — the lone sanctioned warm glow." },
+      { "name": "focus-ring", "value": "0 0 0 3px rgba(255,232,166,0.75)", "purpose": "Gold focus ring on form fields and the search pill." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Default exponential ease-out for state transitions and panel reveal." },
+      { "name": "transition-ui", "value": "0.18s", "purpose": "Duration for button/input/link state transitions." },
+      { "name": "twinkle", "value": "2.6s–6s, four irregular opacity paths, infinite", "purpose": "Star shimmer — opacity only, never scale." },
+      { "name": "parallax", "value": "52s–120s ease-in-out alternate", "purpose": "Per-layer drift that fakes star-field depth." },
+      { "name": "cloud-drift", "value": "60s–130s ease-in-out alternate", "purpose": "Slow sideways cloud drift + slight bob." },
+      { "name": "meteor", "value": "850ms–1450ms, every 5–17s", "purpose": "The rare scheduled shooting star." },
+      { "name": "moon-float", "value": "7s ease-in-out infinite", "purpose": "Gentle vertical float of the hero moon." },
+      { "name": "rise-in", "value": "0.45s ease-out", "purpose": "Results panels fade+rise in once data arrives." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one signature CTA — Search, Subscribe, Go Back Home.",
+      "html": "<button class=\"ds-btn-primary\">Subscribe</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; font-family: Quicksand, ui-sans-serif, system-ui, sans-serif; font-weight: 700; font-size: 1rem; line-height: 1; padding: 0.8rem 1.6rem; border: 1px solid transparent; border-radius: 9999px; background: #fefce8; color: #3730a3; cursor: pointer; box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 10px 24px -14px rgba(255,232,166,0.7); transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s cubic-bezier(0.16,1,0.3,1); } .ds-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 0 30px rgba(255,232,166,0.45), 0 0 70px rgba(255,232,166,0.18); } .ds-btn-primary:focus-visible { outline: 2px solid rgba(255,232,166,0.75); outline-offset: 2px; } .ds-btn-primary:active { transform: translateY(0); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action, e.g. Unsubscribe.",
+      "html": "<button class=\"ds-btn-ghost\">Unsubscribe</button>",
+      "css": ".ds-btn-ghost { font-family: Quicksand, ui-sans-serif, system-ui, sans-serif; font-weight: 700; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 9999px; background: rgba(124,132,196,0.09); color: #ffffff; border: 1px solid rgba(165,180,252,0.16); cursor: pointer; transition: border-color 0.18s, background-color 0.18s; } .ds-btn-ghost:hover { border-color: rgba(165,180,252,0.30); background: rgba(124,132,196,0.16); }"
+    },
+    {
+      "name": "Instrument Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Translucent glass surface that floats over the live sky. Top-level only — never nested.",
+      "html": "<section class=\"ds-panel\"><h2 class=\"ds-panel-title\">Conditions</h2><p class=\"ds-panel-body\">Clear skies for most of the night.</p></section>",
+      "css": ".ds-panel { position: relative; background: rgba(20,21,51,0.62); border: 1px solid rgba(165,180,252,0.16); border-radius: 20px; padding: 32px; box-shadow: 0 22px 50px -28px rgba(0,0,0,0.85); -webkit-backdrop-filter: blur(10px) saturate(1.1); backdrop-filter: blur(10px) saturate(1.1); } .ds-panel::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; border-radius: 20px 20px 0 0; background: linear-gradient(90deg, transparent, rgba(255,232,166,0.35), transparent); } .ds-panel-title { margin: 0; font-family: Herculanum, ui-serif, serif; font-weight: 400; font-size: 1.875rem; color: #ffffff; } .ds-panel-body { margin: 0.75rem 0 0; font-family: Quicksand, ui-sans-serif, system-ui, sans-serif; color: #c3c9ef; line-height: 1.6; }"
+    },
+    {
+      "name": "Input / Search Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Recessed dark well with a gold focus ring.",
+      "html": "<input class=\"ds-input\" placeholder=\"City\" />",
+      "css": ".ds-input { width: 100%; box-sizing: border-box; font-family: Quicksand, ui-sans-serif, system-ui, sans-serif; font-size: 1rem; color: #ffffff; background: rgba(7,7,22,0.55); border: 1px solid rgba(165,180,252,0.16); border-radius: 14px; padding: 0.75rem 1rem; transition: border-color 0.18s, box-shadow 0.18s; } .ds-input::placeholder { color: #969ed0; } .ds-input:hover { border-color: rgba(165,180,252,0.30); } .ds-input:focus { outline: none; border-color: #ffe8a6; box-shadow: 0 0 0 3px rgba(255,232,166,0.75); }"
+    },
+    {
+      "name": "Metric Stat",
+      "kind": "custom",
+      "refersTo": "stat-value",
+      "description": "A labelled metric with the cloud-cover meter — replaces label:value paragraphs.",
+      "html": "<div class=\"ds-stat\"><div class=\"ds-stat-label\">Cloud cover</div><div class=\"ds-stat-value\">14%</div><div class=\"ds-meter\"><span style=\"width:14%\"></span></div></div>",
+      "css": ".ds-stat { font-family: Quicksand, ui-sans-serif, system-ui, sans-serif; } .ds-stat-label { font-size: 0.8125rem; font-weight: 500; color: #969ed0; } .ds-stat-value { margin-top: 0.375rem; font-size: 1.375rem; font-weight: 600; color: #ffffff; line-height: 1.1; } .ds-meter { margin-top: 0.625rem; height: 4px; border-radius: 9999px; background: rgba(124,132,196,0.22); overflow: hidden; } .ds-meter > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #f4dc9f, #ffe8a6); }"
+    },
+    {
+      "name": "Status Panel (Error)",
+      "kind": "custom",
+      "refersTo": "status-error",
+      "description": "Full-bordered tonal status panel — never a side-stripe accent.",
+      "html": "<div class=\"ds-status-error\"><p class=\"ds-status-title\">✗ Error</p><p class=\"ds-status-body\">No management token provided.</p></div>",
+      "css": ".ds-status-error { border: 1px solid #ef4444; background: rgba(127,29,29,0.5); border-radius: 8px; padding: 24px; font-family: Quicksand, ui-sans-serif, system-ui, sans-serif; } .ds-status-title { margin: 0 0 0.5rem; font-size: 1.25rem; color: #fee2e2; } .ds-status-body { margin: 0; color: #e0e7ff; }"
+    },
+    {
+      "name": "Vector Sparkle Star",
+      "kind": "custom",
+      "refersTo": "star",
+      "description": "Signature: the crisp four-point vector star of the night sky. Flat fill, no glow.",
+      "html": "<svg class=\"ds-star\" viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"#ffffff\" aria-hidden=\"true\"><path d=\"M12 0c.9 6.6 4.8 10.5 12 12-7.2 1.5-11.1 5.4-12 12-.9-6.6-4.8-10.5-12-12 7.2-1.5 11.1-5.4 12-12z\"/></svg>",
+      "css": ".ds-star { display: inline-block; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Almanac",
+    "overview": "Moongaz.ing is an old celestial almanac rendered as clean, flat vector art. A real night sky fills the whole screen — a deep-indigo gradient, crisp four-point sparkle stars, flat moonlit clouds, the gold moon — and the interface is a small set of translucent glass 'instrument' panels floating in it. The system is built on restraint: beauty comes from a believable, atmospheric night and from getting out of the way of one practical question — is tonight good? — never from effects. It is explicitly flat and crisp: no glow halos, no bloom, no photoreal haze. Copy is plain and literal; the UI states the moon phase and the numbers and lets the reader judge. One warm accent — moonlight gold — appears rarely and only for functional emphasis.",
+    "keyCharacteristics": [
+      "Full-bleed flat-vector night sky behind translucent glass instrument panels.",
+      "White text on deep indigo; one warm gold accent, used sparingly.",
+      "Two faces only: Herculanum (display/brand) and Quicksand (all functional UI).",
+      "Plain, literal copy — facts, not voice.",
+      "Calm by default; delight reserved for moments."
+    ],
+    "rules": [
+      { "name": "The One Gold Rule", "body": "Moonlight gold is functional, never atmospheric. It marks a focus ring, a meter, a chevron, a CTA hover. It is forbidden as a glow, halo, or bloom on the sky art.", "section": "colors" },
+      { "name": "The White-Ink Rule", "body": "Primary text is pure #ffffff. Never tint it cool or warm 'for elegance' — light-gray body text on indigo reads as generic AI dark-mode.", "section": "colors" },
+      { "name": "The Display-Stays-Out-of-the-UI Rule", "body": "Herculanum is for the wordmark, page titles, and panel headings — nothing else. Buttons, inputs, labels, data, and microcopy are always Quicksand.", "section": "typography" },
+      { "name": "The Two-Plane Rule", "body": "There are exactly two planes: the flat sky (no shadow, no blur on the art) and the lifted glass panels (one deep shadow + backdrop blur). Never nest a panel, never add a third elevation step.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep primary text pure white (#ffffff) on the indigo sky; verify ≥4.5:1.",
+      "Do use Herculanum only for the wordmark, page titles, and panel headings; Quicksand for every control, label, and datum.",
+      "Do use the cream/indigo-800 pill (#fefce8 / #3730a3) as the one primary CTA.",
+      "Do keep moonlight gold rare and functional — focus ring, meter, chevron, CTA hover.",
+      "Do state facts plainly: the moon phase, the location, the numbers. Let the user draw the conclusion.",
+      "Do keep panels top-level and float them on the one deep shadow + backdrop blur."
+    ],
+    "donts": [
+      "Don't add glow, bloom, or halos to the moon, stars, or clouds — shapes stay crisp and flat.",
+      "Don't scatter uniform identical dots on a flat gradient (the generic 'AI starfield' screensaver).",
+      "Don't reach for 'magical galaxy' kitsch: rainbow nebulae, lens flares, heavy bloom.",
+      "Don't write marketing-voice or 'AI-assistant' copy — no taglines, editorializing verdicts, invented features, or padded helper text.",
+      "Don't let background motion become busy or compete with the practical answer.",
+      "Don't put a display font on buttons, inputs, labels, or data.",
+      "Don't use side-stripe borders, tracked all-caps eyebrows, or nested panels.",
+      "Don't tint the body text off-white 'for elegance'; that's the generic AI dark-mode tell."
+    ]
+  }
+}

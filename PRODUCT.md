@@ -20,25 +20,34 @@ it — and the app feeling like a calm, beautiful companion to a hobby about won
 
 ## Brand Personality
 
-Serene, celestial, trustworthy. The interface should feel like standing under a
-real night sky — quiet, atmospheric, a little magical — without getting in the way
-of the practical question (is tonight good?). The Herculanum display face lends an
-ancient, celestial-almanac character; the deep-indigo sky and moon art carry the
-mood. Realism over stylization: the beauty comes from believable night, not cartoon
-sparkle.
+Serene, celestial, trustworthy. The interface should feel like a quiet night sky —
+atmospheric and a little magical — without getting in the way of the practical
+question (is tonight good?). The Herculanum display face lends an ancient,
+celestial-almanac character; the deep-indigo sky, gold moon, and crisp star art
+carry the mood. The look is clean, flat vector illustration — crisp shapes, no
+glow, bloom, or photoreal haze; the beauty is in restraint, not effects.
 
 ## Anti-references
 
-- The generic "AI starfield": uniform pure-white dots evenly scattered on a flat
-  blue gradient (the screensaver look we're replacing).
-- Bright-white cloud blobs that glow at night and read as fog smudges.
+- The generic "AI starfield": uniform identical dots evenly scattered on a flat
+  gradient, with no depth or variation.
+- Glow and bloom: halos around the moon or stars, glowing cloud blobs that read as
+  fog smudges, drop-shadow auras. Shapes stay crisp and flat.
 - Over-the-top "magical galaxy" kitsch: rainbow nebulae, lens flares, heavy bloom.
 - Busy, attention-grabbing motion that competes with the content.
+- Marketing-voice or "AI assistant" copy: taglines, editorializing verdicts
+  ("Great viewing tonight!"), invented features dressed up as helpfulness, padded
+  helper text. The UI states the facts plainly and lets the user judge.
 
 ## Design Principles
 
-- **Believable night first.** Atmosphere comes from real-sky cues — color-temperature
-  stars, moonlit clouds, parallax depth — not stylized sparkle.
+- **Flat vector night.** The sky is clean vector art — four-point sparkle stars and
+  flat clouds over the deep-indigo gradient and gold moon. Illustrative, not
+  photoreal; no glow, bloom, or halos. Depth comes from parallax and size/brightness
+  variation, not effects.
+- **Plain, literal copy.** State the facts — moon phase, the location, the numbers.
+  No marketing voice, no editorializing verdicts, no invented features. Labels and
+  microcopy stay terse and functional; the user draws their own conclusion.
 - **Honest signals.** Visual state should mean something: more cloud cover genuinely
   dims and hides the sky, because that is worse for viewing.
 - **Delight in moments, calm by default.** One signature surprise (a rare shooting
