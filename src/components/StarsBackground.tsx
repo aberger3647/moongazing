@@ -32,18 +32,23 @@ interface LayerSpec {
   maxSize: number;
   minFloor: number; // twinkle opacity floor (how dark it dips)
   maxFloor: number;
+  minDur: number; // twinkle cycle in seconds (full floor → flare → floor)
+  maxDur: number;
   px: string;
   py: string;
   pdur: string;
 }
 
+// Faint, distant stars scintillate fastest — that brisk far-layer shimmer is what
+// reads as "twinkling." Near/large stars cycle slowly so the eye-drawing ones stay
+// calm and the sky feels alive without getting busy.
 const LAYERS: LayerSpec[] = [
-  // far: many tiny dim sparkles, barely drift, dip darkest
-  { count: 70, minSize: 3, maxSize: 5, minFloor: 0.18, maxFloor: 0.32, px: "5px", py: "7px", pdur: "120s" },
+  // far: many tiny dim sparkles, barely drift, dip darkest, twinkle quickest
+  { count: 70, minSize: 3, maxSize: 5, minFloor: 0.18, maxFloor: 0.32, minDur: 2.0, maxDur: 4.0, px: "5px", py: "7px", pdur: "120s" },
   // mid
-  { count: 45, minSize: 5, maxSize: 8, minFloor: 0.34, maxFloor: 0.5, px: "13px", py: "16px", pdur: "80s" },
-  // near: fewer, bigger, brighter, faster
-  { count: 22, minSize: 8, maxSize: 13, minFloor: 0.5, maxFloor: 0.7, px: "26px", py: "30px", pdur: "52s" },
+  { count: 45, minSize: 5, maxSize: 8, minFloor: 0.34, maxFloor: 0.5, minDur: 2.8, maxDur: 5.0, px: "13px", py: "16px", pdur: "80s" },
+  // near: fewer, bigger, brighter, drift most, twinkle slowest of the field
+  { count: 22, minSize: 8, maxSize: 13, minFloor: 0.5, maxFloor: 0.7, minDur: 3.6, maxDur: 6.0, px: "26px", py: "30px", pdur: "52s" },
 ];
 
 // A handful of hero sparkles sit larger and hold steady.
@@ -66,7 +71,7 @@ const makeStars = (spec: LayerSpec, seed: number): Star[] =>
   Array.from({ length: spec.count }, (_, i) => {
     // Each loop is floor → flare → floor, so the full cycle is one --tdur (no
     // alternate). Start each star at a random phase so nothing twinkles together.
-    const dur = rand(4.5, 10);
+    const dur = rand(spec.minDur, spec.maxDur);
     return {
       id: seed + i,
       top: `${Math.random() * 100}%`,
@@ -83,7 +88,7 @@ const makeStars = (spec: LayerSpec, seed: number): Star[] =>
 
 const makeBrightStars = (seed: number): Star[] =>
   Array.from({ length: BRIGHT_COUNT }, (_, i) => {
-    const dur = rand(8, 14); // hero stars swell slowly
+    const dur = rand(6, 10); // hero stars swell slowly, but still visibly breathe
     return {
       id: seed + i,
       top: `${rand(6, 88)}%`,
