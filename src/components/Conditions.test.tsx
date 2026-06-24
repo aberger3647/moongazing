@@ -28,20 +28,4 @@ describe("Conditions", () => {
     expect(screen.getByText("9 miles")).toBeInTheDocument();
     expect(screen.getByText("Sunset")).toBeInTheDocument();
   });
-
-  it("gives a clear-sky night a 'great viewing' verdict", () => {
-    const data = makeVisualCrossing({
-      currentConditions: { sunset: "20:30:00", visibility: 16, cloudcover: 10, precipprob: 5 },
-    });
-    render(<Conditions data={data} />);
-    expect(screen.getByText(/great viewing/i)).toBeInTheDocument();
-  });
-
-  it("calls an overcast, rainy night 'poor viewing'", () => {
-    const data = makeVisualCrossing({
-      currentConditions: { sunset: "20:30:00", visibility: 4, cloudcover: 90, precipprob: 80 },
-    });
-    render(<Conditions data={data} />);
-    expect(screen.getByText(/poor viewing/i)).toBeInTheDocument();
-  });
 });

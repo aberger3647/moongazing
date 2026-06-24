@@ -21,9 +21,7 @@ export default {
         ink: { DEFAULT: '#ffffff', soft: '#c3c9ef', mute: '#969ed0' },
         // Moonlight — the single warm accent.
         moon: { DEFAULT: '#ffe8a6', soft: '#f4dc9f' },
-        cream: '#fef6e0',
-        // Night-tuned semantic colours for the viewing verdict only.
-        verdict: { good: '#9fe6c4', fair: '#ffe8a6', poor: '#f0a8bd' },
+        cream: '#fefce8',
       },
       letterSpacing: {
         display: '-0.02em',

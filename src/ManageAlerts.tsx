@@ -142,7 +142,6 @@ export const ManageAlerts = () => {
     <main className="mx-auto w-full max-w-2xl px-5 py-16 sm:py-20">
       <div className="text-center">
         <h1 className="font-herculanum text-4xl sm:text-5xl">Manage Alerts</h1>
-        <p className="mt-2 text-ink-soft">Your moon-gazing notifications, in one place.</p>
       </div>
 
       <div className="mt-10 space-y-4">
@@ -162,24 +161,23 @@ export const ManageAlerts = () => {
         )}
 
         {error && (
-          <div className="verdict is-poor panel flex items-start gap-3 p-5">
-            <span className="verdict-dot mt-1.5" aria-hidden="true" />
-            <p className="text-ink">{error}</p>
+          <div className="rounded-lg border border-red-500 bg-red-900 bg-opacity-50 p-6">
+            <p className="mb-2 text-xl text-red-100">✗ Error</p>
+            <p className="text-indigo-100">{error}</p>
           </div>
         )}
 
         {message && (
-          <p className="verdict is-good flex items-center justify-center gap-2 text-sm font-medium">
-            <span className="verdict-dot" aria-hidden="true" />
-            <span className="text-ink">{message}</span>
-          </p>
+          <div className="rounded-lg border border-green-500 bg-green-900 bg-opacity-50 p-6">
+            <p className="text-indigo-100">{message}</p>
+          </div>
         )}
 
         {!loading && alerts.length === 0 && !error && (
           <div className="panel p-8 text-center">
             <p className="text-ink-soft">You don't have any active alerts.</p>
             <p className="mt-4">
-              <a href="/" className="font-semibold text-moon hover:text-moon-soft">
+              <a href="/" className="text-yellow-50 underline hover:text-yellow-100">
                 Return to home
               </a>
             </p>
@@ -198,11 +196,7 @@ export const ManageAlerts = () => {
                     <p className="truncate font-semibold text-ink">
                       {titleCase(alert.location_name)}
                     </p>
-                    <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-mute">
-                      <span
-                        className="h-1.5 w-1.5 rounded-full bg-verdict-good"
-                        aria-hidden="true"
-                      />
+                    <p className="mt-1 text-sm text-indigo-300">
                       {alert.active ? "Active" : "Inactive"}
                     </p>
                   </div>
@@ -230,7 +224,7 @@ export const ManageAlerts = () => {
             )}
 
             <p className="pt-2 text-center">
-              <a href="/" className="font-semibold text-moon hover:text-moon-soft">
+              <a href="/" className="text-yellow-50 underline hover:text-yellow-100">
                 Return to home
               </a>
             </p>

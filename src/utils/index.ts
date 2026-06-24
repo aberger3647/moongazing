@@ -8,5 +8,3 @@ export { moonSvgs } from "./moonSvgs";
 export { sendEmail } from "./emailService";
 export { triggerMoonAlertCheck } from "./triggerMoonAlertCheck";
 export { titleCase } from "./titleCase";
-export { viewingVerdict } from "./viewingVerdict";
-export type { Verdict, VerdictLevel } from "./viewingVerdict";

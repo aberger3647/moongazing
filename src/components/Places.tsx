@@ -1,6 +1,6 @@
 import type { Place } from "../types/Place";
 import type { Dispatch, SetStateAction } from "react";
-import { toMiles, titleCase } from "../utils";
+import { toMiles } from "../utils";
 
 interface PlacesProps {
   location: string;
@@ -18,7 +18,6 @@ const RADII = [
 ];
 
 export const Places = ({
-  location,
   places,
   radius,
   setRadius,
@@ -27,12 +26,7 @@ export const Places = ({
   return (
     <section className="panel animate-rise-in p-6 sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="font-herculanum text-2xl sm:text-3xl">Dark Sky Places</h2>
-          <p className="mt-1 text-sm text-ink-mute">
-            Certified dark-sky spots near {titleCase(location)}
-          </p>
-        </div>
+        <h2 className="font-herculanum text-2xl sm:text-3xl">Dark Sky Places</h2>
         <div className="flex items-center gap-2.5">
           <label htmlFor="radius" className="whitespace-nowrap text-sm font-semibold text-ink-soft">
             Within
@@ -71,7 +65,6 @@ export const Places = ({
         ) : places.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-ink-soft">No places found within this radius.</p>
-            <p className="mt-1 text-sm text-ink-mute">Try widening your search above.</p>
           </div>
         ) : (
           <ul className="divide-y divide-white/10">
@@ -84,7 +77,7 @@ export const Places = ({
                   <p className="truncate font-semibold text-ink">{place.place_name}</p>
                   <p className="mt-0.5 text-sm text-ink-mute">{place.category}</p>
                 </div>
-                <p className="shrink-0 whitespace-nowrap text-sm font-medium tabular-nums text-moon">
+                <p className="shrink-0 whitespace-nowrap text-sm font-medium tabular-nums text-ink-soft">
                   {place.distance !== undefined
                     ? `${toMiles(place.distance, "m")} miles away`
                     : "Distance unknown"}

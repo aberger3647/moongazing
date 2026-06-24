@@ -44,31 +44,25 @@ export const Unsubscribe = () => {
       <h1 className="font-herculanum text-4xl tracking-display sm:text-5xl">Moon Gazing Alerts</h1>
 
       {status === "loading" && (
-        <p className="mt-8 text-ink-soft">Processing your request…</p>
+        <p className="mt-8 text-indigo-100">Processing your request…</p>
       )}
 
       {status === "success" && (
-        <div className="verdict is-good panel mt-8 w-full p-7 text-left">
-          <div className="flex items-center gap-3">
-            <span className="verdict-dot" aria-hidden="true" />
-            <h2 className="font-herculanum text-2xl">You're unsubscribed</h2>
-          </div>
-          <p className="mt-3 text-ink-soft">{message}</p>
+        <div className="mt-8 w-full rounded-lg border border-green-500 bg-green-900 bg-opacity-50 p-6">
+          <p className="mb-4 text-xl text-green-100">✓ Success</p>
+          <p className="text-indigo-100">{message}</p>
         </div>
       )}
 
       {status === "error" && (
-        <div className="verdict is-poor panel mt-8 w-full p-7 text-left">
-          <div className="flex items-center gap-3">
-            <span className="verdict-dot" aria-hidden="true" />
-            <h2 className="font-herculanum text-2xl">Something went wrong</h2>
-          </div>
-          <p className="mt-3 text-ink-soft">{message}</p>
+        <div className="mt-8 w-full rounded-lg border border-red-500 bg-red-900 bg-opacity-50 p-6">
+          <p className="mb-4 text-xl text-red-100">✗ Error</p>
+          <p className="text-indigo-100">{message}</p>
         </div>
       )}
 
       <p className="mt-8">
-        <a href="/" className="font-semibold text-moon hover:text-moon-soft">
+        <a href="/" className="text-yellow-50 underline hover:text-yellow-100">
           Return to home
         </a>
       </p>

@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 // A vector night sky. Stars are crisp four-point sparkles — flat SVG shapes, no
 // glow — carried on three parallax depth layers (near = larger/brighter/faster,
 // far = smaller/dimmer/slower) and shimmering by opacity alone so they never
-// balloon. The brightest few are simply larger and steadier. Pure SVG + CSS, no
+// balloon. Each gets one of four irregular twinkle paths (see index.css) plus its
+// own duration and phase, so the field scintillates randomly rather than breathing
+// in unison. The brightest few are simply larger and steadier. Pure SVG + CSS, no
 // deps, except the occasional shooting star: the one scheduled moment of delight.
 
 // Weighted toward white; a minority run cool or warm, like a real field.
@@ -17,8 +19,12 @@ const STAR_COLORS = [
 const SPARKLE =
   "M12 0c.9 6.6 4.8 10.5 12 12-7.2 1.5-11.1 5.4-12 12-.9-6.6-4.8-10.5-12-12 7.2-1.5 11.1-5.4 12-12z";
 
-const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+const pick = <T,>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)];
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
+
+// The four irregular twinkle keyframes defined in index.css (.tw-{a,b,c,d}).
+const TWINKLES = ["a", "b", "c", "d"] as const;
+type Twinkle = (typeof TWINKLES)[number];
 
 interface LayerSpec {
   count: number;
@@ -52,38 +58,49 @@ interface Star {
   floor: number;
   tdur: string;
   tdelay: string;
+  twinkle: Twinkle;
   bright: boolean;
 }
 
 const makeStars = (spec: LayerSpec, seed: number): Star[] =>
-  Array.from({ length: spec.count }, (_, i) => ({
-    id: seed + i,
-    top: `${Math.random() * 100}%`,
-    left: `${Math.random() * 100}%`,
-    size: rand(spec.minSize, spec.maxSize),
-    color: pick(STAR_COLORS),
-    floor: rand(spec.minFloor, spec.maxFloor),
-    tdur: `${rand(2.6, 6).toFixed(2)}s`,
-    tdelay: `${(-Math.random() * 6).toFixed(2)}s`,
-    bright: false,
-  }));
+  Array.from({ length: spec.count }, (_, i) => {
+    // Each loop is floor → flare → floor, so the full cycle is one --tdur (no
+    // alternate). Start each star at a random phase so nothing twinkles together.
+    const dur = rand(4.5, 10);
+    return {
+      id: seed + i,
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      size: rand(spec.minSize, spec.maxSize),
+      color: pick(STAR_COLORS),
+      floor: rand(spec.minFloor, spec.maxFloor),
+      tdur: `${dur.toFixed(2)}s`,
+      tdelay: `${(-Math.random() * dur).toFixed(2)}s`,
+      twinkle: pick(TWINKLES),
+      bright: false,
+    };
+  });
 
 const makeBrightStars = (seed: number): Star[] =>
-  Array.from({ length: BRIGHT_COUNT }, (_, i) => ({
-    id: seed + i,
-    top: `${rand(6, 88)}%`,
-    left: `${rand(4, 96)}%`,
-    size: rand(15, 22),
-    color: pick(STAR_COLORS),
-    floor: rand(0.72, 0.85), // hero stars hold steady
-    tdur: `${rand(5, 9).toFixed(2)}s`,
-    tdelay: `${(-Math.random() * 6).toFixed(2)}s`,
-    bright: true,
-  }));
+  Array.from({ length: BRIGHT_COUNT }, (_, i) => {
+    const dur = rand(8, 14); // hero stars swell slowly
+    return {
+      id: seed + i,
+      top: `${rand(6, 88)}%`,
+      left: `${rand(4, 96)}%`,
+      size: rand(15, 22),
+      color: pick(STAR_COLORS),
+      floor: rand(0.72, 0.85), // hero stars hold steady
+      tdur: `${dur.toFixed(2)}s`,
+      tdelay: `${(-Math.random() * dur).toFixed(2)}s`,
+      twinkle: "d", // the broad, steady swell — never the flickery variants
+      bright: true,
+    };
+  });
 
 const Sparkle = ({ s }: { s: Star }) => (
   <svg
-    className={`star-twinkle absolute${s.bright ? " star-bright" : ""}`}
+    className={`star-twinkle tw-${s.twinkle} absolute${s.bright ? " star-bright" : ""}`}
     style={
       {
         top: s.top,

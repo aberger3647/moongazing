@@ -21,11 +21,8 @@ export const NotFound = () => {
         style={{ filter: "drop-shadow(0 0 30px rgba(124, 132, 196, 0.55))" }}
       />
       <p className="mt-8 font-herculanum text-6xl tracking-display sm:text-7xl">404</p>
-      <h1 className="mt-3 font-herculanum text-2xl sm:text-3xl">Lost in the dark</h1>
-      <p className="mt-3 max-w-sm text-ink-soft">
-        This page is below the horizon. Let&rsquo;s get you back under open sky.
-      </p>
-      <Link to="/" className="btn btn-primary mt-9">
+      <h1 className="mt-3 font-herculanum text-2xl sm:text-3xl">Page not found</h1>
+      <Link to="/" className="btn btn-primary mt-8">
         Go Back Home
       </Link>
     </main>
