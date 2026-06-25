@@ -98,9 +98,8 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
           Moongaz.ing
         </h1>
 
-        <p className="mt-4 inline-flex items-center gap-2 text-sm text-ink-soft">
-          <span className="h-1.5 w-1.5 rounded-full bg-moon" aria-hidden="true" />
-          Tonight&rsquo;s moon · {moonPhase}
+        <p className="mt-4 font-herculanum text-xl text-ink-soft sm:text-2xl">
+          {moonPhase}
         </p>
 
         <form onSubmit={onSubmit} className="mt-8 w-full max-w-md">
