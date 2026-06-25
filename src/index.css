@@ -69,8 +69,9 @@
   to   { transform: translate3d(var(--cto, 5vw), var(--cbob, 1.5vh), 0); }
 }
 
-/* A meteor: the streak translates along its parent's rotated x-axis and fades
-   in fast / out slow, so the head leads and the tail follows it across. */
+/* A meteor: the streak translates along its parent's rotated x-axis — eased
+   slow-fast-slow (see .streak) — and fades in fast / out slow, so the head
+   leads and the tail follows it across. */
 @keyframes meteor {
   0%   { transform: translateX(0);                opacity: 0; }
   12%  {                                          opacity: 1; }
@@ -99,7 +100,10 @@
 
 .shooting-star {
   position: absolute;
-  transform: rotate(var(--mangle, 24deg));
+  /* --mflip is -1 for right-side meteors: scaleX *outside* the rotate mirrors the
+     whole streak across the vertical axis, so it falls down-left instead of
+     down-right (gradient and head dot flip with it). */
+  transform: scaleX(var(--mflip, 1)) rotate(var(--mangle, 24deg));
   transform-origin: left center;
 }
 .shooting-star .streak {
@@ -114,7 +118,7 @@
     rgba(220, 232, 255, 0.65) 88%,
     #ffffff 100%
   );
-  animation: meteor var(--mdur, 1100ms) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: meteor var(--mdur, 1100ms) cubic-bezier(0.65, 0, 0.35, 1) forwards;
   will-change: transform, opacity;
 }
 /* Glowing head dot at the leading (right) tip of the streak. */

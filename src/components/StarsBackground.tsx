@@ -44,15 +44,15 @@ interface LayerSpec {
 // calm and the sky feels alive without getting busy.
 const LAYERS: LayerSpec[] = [
   // far: many tiny dim sparkles, barely drift, dip darkest, twinkle quickest
-  { count: 70, minSize: 3, maxSize: 5, minFloor: 0.18, maxFloor: 0.32, minDur: 2.0, maxDur: 4.0, px: "5px", py: "7px", pdur: "120s" },
+  { count: 42, minSize: 3, maxSize: 5, minFloor: 0.18, maxFloor: 0.32, minDur: 3.5, maxDur: 6.0, px: "5px", py: "7px", pdur: "120s" },
   // mid
-  { count: 45, minSize: 5, maxSize: 8, minFloor: 0.34, maxFloor: 0.5, minDur: 2.8, maxDur: 5.0, px: "13px", py: "16px", pdur: "80s" },
+  { count: 27, minSize: 5, maxSize: 8, minFloor: 0.34, maxFloor: 0.5, minDur: 4.5, maxDur: 7.5, px: "13px", py: "16px", pdur: "80s" },
   // near: fewer, bigger, brighter, drift most, twinkle slowest of the field
-  { count: 22, minSize: 8, maxSize: 13, minFloor: 0.5, maxFloor: 0.7, minDur: 3.6, maxDur: 6.0, px: "26px", py: "30px", pdur: "52s" },
+  { count: 14, minSize: 8, maxSize: 13, minFloor: 0.5, maxFloor: 0.7, minDur: 6.0, maxDur: 9.5, px: "26px", py: "30px", pdur: "52s" },
 ];
 
 // A handful of hero sparkles sit larger and hold steady.
-const BRIGHT_COUNT = 7;
+const BRIGHT_COUNT = 5;
 
 interface Star {
   id: number;
@@ -88,7 +88,7 @@ const makeStars = (spec: LayerSpec, seed: number): Star[] =>
 
 const makeBrightStars = (seed: number): Star[] =>
   Array.from({ length: BRIGHT_COUNT }, (_, i) => {
-    const dur = rand(6, 10); // hero stars swell slowly, but still visibly breathe
+    const dur = rand(9, 14); // hero stars swell slowly, but still visibly breathe
     return {
       id: seed + i,
       top: `${rand(6, 88)}%`,
@@ -132,20 +132,29 @@ interface Meteor {
   top: string;
   left: string;
   angle: string;
+  flip: number; // 1 = left side (falls down-right), -1 = right side (mirrored)
   len: string;
   travel: string;
   dur: string;
 }
 
-const makeMeteor = (key: number): Meteor => ({
-  key,
-  top: `${rand(2, 38)}%`,
-  left: `${rand(-6, 58)}%`,
-  angle: `${rand(14, 34).toFixed(1)}deg`,
-  len: `${Math.round(rand(120, 230))}px`,
-  travel: `${Math.round(rand(42, 72))}vw`,
-  dur: `${Math.round(rand(850, 1450))}ms`,
-});
+const makeMeteor = (key: number): Meteor => {
+  // Keep meteors off the centre and out along the left/right sides of the sky.
+  // Left-side streaks fall down-right from the edge; right-side ones are mirrored
+  // (flip: -1 → scaleX in CSS) so they fall down-left — a symmetric pair. Travel
+  // is short so a streak stays on its side instead of sweeping across the middle.
+  const right = Math.random() < 0.5;
+  return {
+    key,
+    top: `${rand(2, 80).toFixed(1)}%`,
+    left: right ? `${rand(80, 104).toFixed(1)}%` : `${rand(-8, 14).toFixed(1)}%`,
+    angle: `${rand(12, 38).toFixed(1)}deg`,
+    flip: right ? -1 : 1,
+    len: `${Math.round(rand(120, 220))}px`,
+    travel: `${Math.round(rand(18, 32))}vw`,
+    dur: `${Math.round(rand(850, 1450))}ms`,
+  };
+};
 
 const ShootingStars = () => {
   const [meteor, setMeteor] = useState<Meteor | null>(null);
@@ -191,6 +200,7 @@ const ShootingStars = () => {
           top: meteor.top,
           left: meteor.left,
           "--mangle": meteor.angle,
+          "--mflip": meteor.flip,
           "--mlen": meteor.len,
           "--mtravel": meteor.travel,
           "--mdur": meteor.dur,

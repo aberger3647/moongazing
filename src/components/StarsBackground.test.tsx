@@ -8,14 +8,14 @@ describe("StarsBackground", () => {
     expect(container.querySelectorAll(".parallax-layer")).toHaveLength(3);
   });
 
-  it("renders the full star field (70 + 45 + 22 + 7 bright = 144)", () => {
+  it("renders the full star field (42 + 27 + 14 + 5 bright = 88)", () => {
     const { container } = render(<StarsBackground />);
-    expect(container.querySelectorAll(".star-twinkle")).toHaveLength(144);
+    expect(container.querySelectorAll(".star-twinkle")).toHaveLength(88);
   });
 
   it("gives the brightest stars diffraction spikes", () => {
     const { container } = render(<StarsBackground />);
-    expect(container.querySelectorAll(".star-bright")).toHaveLength(7);
+    expect(container.querySelectorAll(".star-bright")).toHaveLength(5);
   });
 
   it("does not block clicks (pointer-events-none on the layer root)", () => {
