@@ -91,14 +91,14 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
           aria-hidden="true"
           width={224}
           height={224}
-          className="h-40 w-40 animate-moon-float sm:h-52 sm:w-52"
+          className="h-40 w-40 sm:h-52 sm:w-52"
         />
 
         <h1 className="mt-6 font-herculanum text-5xl sm:text-6xl">
           Moongaz.ing
         </h1>
 
-        <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[var(--panel-soft)] px-3.5 py-1.5 text-sm text-ink-soft">
+        <p className="mt-4 inline-flex items-center gap-2 text-sm text-ink-soft">
           <span className="h-1.5 w-1.5 rounded-full bg-moon" aria-hidden="true" />
           Tonight&rsquo;s moon · {moonPhase}
         </p>
@@ -107,7 +107,7 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
           <label htmlFor="location" className="sr-only">
             City or location
           </label>
-          <div className="flex items-center gap-2 rounded-full border border-[var(--hairline)] bg-[var(--well)] p-1.5 pl-5 transition focus-within:border-moon focus-within:shadow-[0_0_0_3px_var(--focus)]">
+          <div className="flex items-center gap-2 rounded-full border border-[var(--hairline)] bg-[var(--well)] p-1.5 pl-5 transition focus-within:border-moon">
             <input
               name="location"
               id="location"

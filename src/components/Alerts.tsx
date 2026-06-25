@@ -205,7 +205,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
 
   return (
     <section className="panel animate-rise-in p-6 sm:p-8">
-      <h2 className="font-herculanum text-2xl sm:text-3xl">Email Alerts</h2>
+      <h2 className="font-herculanum text-2xl sm:text-3xl text-center">Email Alerts</h2>
       <p className="mt-1.5 max-w-[52ch] text-ink-soft">
         Email me when moon-gazing conditions are optimal for {titleCase(location)}:
       </p>

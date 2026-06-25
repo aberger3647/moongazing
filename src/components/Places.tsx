@@ -25,8 +25,8 @@ export const Places = ({
 }: PlacesProps) => {
   return (
     <section className="panel animate-rise-in p-6 sm:p-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <h2 className="font-herculanum text-2xl sm:text-3xl">Dark Sky Places</h2>
+      <div className="flex flex-col items-center gap-3">
+        <h2 className="font-herculanum text-2xl sm:text-3xl text-center">Dark Sky Places</h2>
         <div className="flex items-center gap-2.5">
           <label htmlFor="radius" className="whitespace-nowrap text-sm font-semibold text-ink-soft">
             Within
@@ -69,19 +69,23 @@ export const Places = ({
         ) : (
           <ul className="divide-y divide-white/10">
             {places.map((place) => (
-              <li
-                key={place.id}
-                className="flex items-center justify-between gap-4 py-4"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-semibold text-ink">{place.place_name}</p>
-                  <p className="mt-0.5 text-sm text-ink-mute">{place.category}</p>
-                </div>
-                <p className="shrink-0 whitespace-nowrap text-sm font-medium tabular-nums text-ink-soft">
-                  {place.distance !== undefined
-                    ? `${toMiles(place.distance, "m")} miles away`
-                    : "Distance unknown"}
-                </p>
+              <li key={place.id}>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="-mx-3 flex items-center justify-between gap-4 rounded-lg px-3 py-4 transition hover:bg-white/5"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-ink">{place.place_name}</p>
+                    <p className="mt-0.5 text-sm text-ink-mute">{place.category}</p>
+                  </div>
+                  <p className="shrink-0 whitespace-nowrap text-sm font-medium tabular-nums text-ink-soft">
+                    {place.distance !== undefined
+                      ? `${toMiles(place.distance, "m")} miles away`
+                      : "Distance unknown"}
+                  </p>
+                </a>
               </li>
             ))}
           </ul>

@@ -27,17 +27,12 @@ export default {
         display: '-0.02em',
       },
       keyframes: {
-        'moon-float': {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
-        },
         'rise-in': {
           from: { opacity: '0', transform: 'translateY(12px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
       },
       animation: {
-        'moon-float': 'moon-float 7s ease-in-out infinite',
         'rise-in': 'rise-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both',
       },
     },
