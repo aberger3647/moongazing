@@ -1,11 +1,10 @@
-import { Conditions, Alerts, Places } from "./components";
+import { Conditions, Alerts, Places, MoonDisc } from "./components";
 import type { MoonPhase, VisualCrossing } from "./types";
 import {
   determineMoonPhase,
   getMoonPhase,
   getConditions,
   setFavicon,
-  moonSvgs,
   titleCase,
 } from "./utils";
 import { useState, useEffect, useCallback } from "react";
@@ -22,6 +21,8 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
   const [conditions, setConditions] = useState<VisualCrossing | null>(null);
   const [loading, setLoading] = useState(false);
   const [moonPhase, setMoonPhase] = useState<MoonPhase | null>(null);
+  // The raw 0–1 phase drives the accurate moon; the bucketed name still labels it.
+  const [moonValue, setMoonValue] = useState<number | null>(null);
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLon, setUserLon] = useState<number | null>(null);
   // Browser geolocation ("Use my current location") runs before runSearch takes
@@ -48,16 +49,19 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
       try {
         const moonVal = await getMoonPhase("Austin, TX");
         if (typeof moonVal === "number") {
+          setMoonValue(moonVal);
           const currentMoonPhase = determineMoonPhase(moonVal);
           setMoonPhase(currentMoonPhase);
           setFavicon(currentMoonPhase);
         } else {
           console.log("Initial fetch returned no moonphase value");
           // Fall back to a real phase so the skeleton doesn't linger forever.
+          setMoonValue(0.5);
           setMoonPhase("Full Moon");
         }
       } catch (error) {
         console.error("Error fetching initial data:", error);
+        setMoonValue(0.5);
         setMoonPhase("Full Moon");
       } finally {
         setLoading(false);
@@ -141,15 +145,8 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
       <header className="mx-auto flex max-w-xl flex-col items-center text-center">
         {/* Hold the moon's place with a circular skeleton until the real phase
             resolves, so the full moon doesn't flash before the correct image. */}
-        {moonPhase ? (
-          <img
-            src={moonSvgs[moonPhase]}
-            alt=""
-            aria-hidden="true"
-            width={224}
-            height={224}
-            className="h-40 w-40 sm:h-52 sm:w-52"
-          />
+        {moonValue !== null ? (
+          <MoonDisc phase={moonValue} className="h-40 w-40 sm:h-52 sm:w-52" />
         ) : (
           <div
             className="skel h-40 w-40 rounded-full sm:h-52 sm:w-52"

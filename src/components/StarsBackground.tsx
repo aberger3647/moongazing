@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+
+import { useSkyParallax } from "../hooks/useSkyParallax";
 
 // A vector night sky. Stars are crisp four-point sparkles — flat SVG shapes, no
 // glow — carried on three parallax depth layers (near = larger/brighter/faster,
@@ -37,6 +39,7 @@ interface LayerSpec {
   px: string;
   py: string;
   pdur: string;
+  depth: number; // pointer/tilt parallax magnitude in px (near layers move most)
 }
 
 // Faint, distant stars scintillate fastest — that brisk far-layer shimmer is what
@@ -44,11 +47,11 @@ interface LayerSpec {
 // calm and the sky feels alive without getting busy.
 const LAYERS: LayerSpec[] = [
   // far: many tiny dim sparkles, barely drift, dip darkest, twinkle quickest
-  { count: 42, minSize: 3, maxSize: 5, minFloor: 0.18, maxFloor: 0.32, minDur: 3.5, maxDur: 6.0, px: "5px", py: "7px", pdur: "120s" },
+  { count: 42, minSize: 3, maxSize: 5, minFloor: 0.18, maxFloor: 0.32, minDur: 3.5, maxDur: 6.0, px: "5px", py: "7px", pdur: "120s", depth: 7 },
   // mid
-  { count: 27, minSize: 5, maxSize: 8, minFloor: 0.34, maxFloor: 0.5, minDur: 4.5, maxDur: 7.5, px: "13px", py: "16px", pdur: "80s" },
+  { count: 27, minSize: 5, maxSize: 8, minFloor: 0.34, maxFloor: 0.5, minDur: 4.5, maxDur: 7.5, px: "13px", py: "16px", pdur: "80s", depth: 18 },
   // near: fewer, bigger, brighter, drift most, twinkle slowest of the field
-  { count: 14, minSize: 8, maxSize: 13, minFloor: 0.5, maxFloor: 0.7, minDur: 6.0, maxDur: 9.5, px: "26px", py: "30px", pdur: "52s" },
+  { count: 14, minSize: 8, maxSize: 13, minFloor: 0.5, maxFloor: 0.7, minDur: 6.0, maxDur: 9.5, px: "26px", py: "30px", pdur: "52s", depth: 38 },
 ];
 
 // A handful of hero sparkles sit larger and hold steady.
@@ -222,24 +225,88 @@ export const StarsBackground = () => {
   );
   const brightStars = useMemo(() => makeBrightStars(9000), []);
 
-  return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
-      {layers.map(({ spec, stars }, li) => (
-        <div
-          key={li}
-          className="parallax-layer absolute inset-0"
-          style={{ "--px": spec.px, "--py": spec.py, "--pdur": spec.pdur } as CSSProperties}
-        >
-          {stars.map((s) => (
-            <Sparkle key={s.id} s={s} />
-          ))}
-          {/* Hero sparkles live in the near layer so they drift with the foreground. */}
-          {li === LAYERS.length - 1 &&
-            brightStars.map((s) => <Sparkle key={s.id} s={s} />)}
-        </div>
-      ))}
+  // The living window: pointer / device tilt / scroll drive depth through CSS vars
+  // written on the root (--mx, --my, --scroll). Inert under prefers-reduced-motion.
+  const skyRef = useRef<HTMLDivElement>(null);
+  const { gyroAvailable, gyroEnabled, enableGyro } = useSkyParallax(skyRef);
 
-      <ShootingStars />
-    </div>
+  // A quiet, one-time nudge to turn on tilt on touch devices; it bows out on its own.
+  const [hintDismissed, setHintDismissed] = useState(false);
+  useEffect(() => {
+    if (!gyroAvailable || gyroEnabled) return;
+    const t = setTimeout(() => setHintDismissed(true), 11000);
+    return () => clearTimeout(t);
+  }, [gyroAvailable, gyroEnabled]);
+  const showHint = gyroAvailable && !gyroEnabled && !hintDismissed;
+
+  return (
+    <>
+      <div
+        ref={skyRef}
+        className="sky-root fixed inset-0 z-0 overflow-hidden pointer-events-none"
+        aria-hidden="true"
+      >
+        {/* One wrapper carries the scroll-recede so the whole field deepens as a unit. */}
+        <div className="sky-depth">
+          {layers.map(({ spec, stars }, li) => (
+            <div
+              key={li}
+              className="parallax-layer absolute inset-0"
+              style={
+                {
+                  "--px": spec.px,
+                  "--py": spec.py,
+                  "--pdur": spec.pdur,
+                  "--depth": spec.depth,
+                } as CSSProperties
+              }
+            >
+              {/* Nested so pointer/tilt translate composes with the layer's own drift. */}
+              <div className="layer-pointer absolute inset-0">
+                {stars.map((s) => (
+                  <Sparkle key={s.id} s={s} />
+                ))}
+                {/* Hero sparkles live in the near layer so they drift with the foreground. */}
+                {li === LAYERS.length - 1 &&
+                  brightStars.map((s) => <Sparkle key={s.id} s={s} />)}
+              </div>
+            </div>
+          ))}
+
+          <ShootingStars />
+
+          {/* Deepens the sky behind the glass panels as the page scrolls to results. */}
+          <div className="sky-dim" />
+        </div>
+      </div>
+
+      {showHint && (
+        <button
+          type="button"
+          onClick={enableGyro}
+          className="gyro-hint btn btn-ghost fixed bottom-5 left-1/2 z-20 -translate-x-1/2 px-4 py-2 text-sm"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="h-4 w-4"
+          >
+            <polyline points="5 9 2 12 5 15" />
+            <polyline points="9 5 12 2 15 5" />
+            <polyline points="15 19 12 22 9 19" />
+            <polyline points="19 9 22 12 19 15" />
+            <line x1="2" x2="22" y1="12" y2="12" />
+            <line x1="12" x2="12" y1="2" y2="22" />
+          </svg>
+          Tilt to look around
+        </button>
+      )}
+    </>
   );
 };

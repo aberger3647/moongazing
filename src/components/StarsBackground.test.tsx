@@ -8,6 +8,11 @@ describe("StarsBackground", () => {
     expect(container.querySelectorAll(".parallax-layer")).toHaveLength(3);
   });
 
+  it("nests a pointer-parallax wrapper inside each layer", () => {
+    const { container } = render(<StarsBackground />);
+    expect(container.querySelectorAll(".layer-pointer")).toHaveLength(3);
+  });
+
   it("renders the full star field (42 + 27 + 14 + 5 bright = 88)", () => {
     const { container } = render(<StarsBackground />);
     expect(container.querySelectorAll(".star-twinkle")).toHaveLength(88);
