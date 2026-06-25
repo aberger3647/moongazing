@@ -5,6 +5,23 @@ export function formatDate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+// Visual Crossing dates are calendar strings ("YYYY-MM-DD"); parse to a UTC date
+// so day math doesn't drift with the server's timezone.
+export function parseYmd(s: string | undefined): Date | null {
+  const m = s ? /^(\d{4})-(\d{2})-(\d{2})/.exec(s) : null;
+  return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
+}
+
+// Whole days from `today` until `target` (negative if past). 0 means today.
+export function daysUntil(target: Date, today: Date): number {
+  const start = Date.UTC(
+    today.getUTCFullYear(),
+    today.getUTCMonth(),
+    today.getUTCDate(),
+  );
+  return Math.round((target.getTime() - start) / 86_400_000);
+}
+
 export function titleCase(str: string): string {
   return str
     .split(" ")

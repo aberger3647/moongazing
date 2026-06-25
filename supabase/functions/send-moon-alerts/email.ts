@@ -1,4 +1,4 @@
-import { titleCase, type DayData } from "./utils.ts";
+import { daysUntil, parseYmd, titleCase, type DayData } from "./utils.ts";
 
 export interface NearbyPlace {
   place_name: string;
@@ -20,20 +20,6 @@ const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
-
-// Visual Crossing dates are calendar strings ("YYYY-MM-DD"); parse to a UTC date
-// so the day math below doesn't drift with the server's timezone.
-function parseYmd(s: string | undefined): Date | null {
-  const m = s ? /^(\d{4})-(\d{2})-(\d{2})/.exec(s) : null;
-  return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
-}
-
-function daysUntil(target: Date, today: Date): number {
-  const start = Date.UTC(
-    today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(),
-  );
-  return Math.round((target.getTime() - start) / 86_400_000);
-}
 
 // "Saturday, June 13": the date spelled out, no leading zeros.
 function formatFriendlyDate(s: string | undefined): string {
@@ -73,9 +59,15 @@ export function buildAlertEmail({
   today,
 }: BuildAlertEmailArgs): { subject: string; html: string } {
   const titled = titleCase(location);
-  const subject = `Moon Gazing Alert for ${titled}`;
   const friendlyDate = formatFriendlyDate(dayData.datetime);
   const when = describeNight(dayData.datetime, today);
+  // On the night itself the subject leads with "Tonight" so the day-of reminder
+  // stands out from the earlier advance heads-up sharing the same inbox thread.
+  const optimalDate = parseYmd(dayData.datetime);
+  const isTonight = optimalDate ? daysUntil(optimalDate, today) <= 0 : false;
+  const subject = isTonight
+    ? `Tonight: Moon Gazing in ${titled}`
+    : `Moon Gazing Alert for ${titled}`;
 
   // Mirrors the site's dark celestial look (src/App.tsx night-sky gradient,
   // the gold full moon, and the cream-pill CTA). Inline styles + a table shell
@@ -143,7 +135,7 @@ export function buildAlertEmail({
   </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0f0f30;">
-  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #0f0f30; font-size: 1px; line-height: 1px;">A clear sky and a full moon over ${titled} on ${friendlyDate}. 🌕</div>
+  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #0f0f30; font-size: 1px; line-height: 1px;">A clear sky and a full moon over ${titled} on ${friendlyDate}.</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0f0f30; background-image: linear-gradient(180deg, #07071c 0%, #0f0f30 42%, #181747 74%, #232255 100%);">
     <tr>
       <td align="center" style="padding: 32px 16px;">
@@ -158,9 +150,9 @@ export function buildAlertEmail({
           </tr>
           <tr>
             <td class="px" style="padding: 12px 40px 4px;">
-              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px;">Optimal moon gazing ${when} 🌕</h2>
+              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px; text-align: center;">Optimal moon gazing ${when}</h2>
               <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">The full moon will be visible in <strong style="color: #ffffff;">${titled}</strong> on <strong style="color: #ffffff;">${friendlyDate}</strong>.</p>
-              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0;">It's the perfect night to head outside. Clear skies are forecast and the moon will be at its brightest.</p>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0;">Clear skies are forecast and the moon will be at its brightest.</p>
               ${placesBlock}
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 28px auto 8px;">
                 <tr>

@@ -3,8 +3,10 @@ import { buildAlertEmail, type NearbyPlace } from "./email.ts";
 import {
   buildForecastUrl,
   type DayData,
+  daysUntil,
   findOptimalDay,
   getForecastDateRange,
+  parseYmd,
   shouldRenotify,
 } from "./utils.ts";
 
@@ -35,6 +37,7 @@ interface AlertRow {
   users?: UserRow;
   unsubscribe_token?: string;
   last_notified?: string;
+  last_dayof_notified?: string;
 }
 
 export interface SendAlertDeps {
@@ -64,9 +67,11 @@ async function readAlertToken(req: Request): Promise<string | null> {
   }
 }
 
-// Pulls active alerts, evaluates a moon-gazing forecast for each, and sends
-// emails for any alert with a clear full-moon day in the next week (subject
-// to the renotify throttle). One alert's failure must not affect the others.
+// Pulls active alerts, evaluates a moon-gazing forecast for each, and emails the
+// subscriber about a clear full-moon night ahead. Two notifications per lunar
+// cycle: an advance heads-up the first time a clear full-moon night appears in
+// the week-ahead window, and a day-of reminder on the night itself (each
+// throttled independently). One alert's failure must not affect the others.
 //
 // Single-alert mode: when the request body carries an alert's
 // `unsubscribe_token`, only that one alert is evaluated. The frontend uses this
@@ -87,6 +92,7 @@ export function createHandler(deps: SendAlertDeps) {
         user_id,
         location_id,
         last_notified,
+        last_dayof_notified,
         unsubscribe_token,
         users(email),
         user_locations(lat, lng, location_name)
@@ -134,9 +140,22 @@ async function processAlert(
     return;
   }
 
-  if (!shouldRenotify(today, alert.last_notified ?? null, RENOTIFY_DAYS)) {
-    return;
-  }
+  // Two independently-throttled notifications per lunar cycle: the advance
+  // heads-up (last_notified) the first time a clear full-moon night appears in
+  // the window, and the day-of reminder (last_dayof_notified) on the night
+  // itself. If both have fired recently there's nothing to send, so bail before
+  // spending a forecast API call.
+  const advanceOpen = shouldRenotify(
+    today,
+    alert.last_notified ?? null,
+    RENOTIFY_DAYS,
+  );
+  const dayOfOpen = shouldRenotify(
+    today,
+    alert.last_dayof_notified ?? null,
+    RENOTIFY_DAYS,
+  );
+  if (!advanceOpen && !dayOfOpen) return;
 
   const { startDate, endDate } = getForecastDateRange(today);
   const url = buildForecastUrl({
@@ -153,6 +172,14 @@ async function processAlert(
 
   const optimalDay = findOptimalDay(days, FULL_MOON_TOLERANCE);
   if (!optimalDay) return;
+
+  // The forecast window starts today, so daysUntil <= 0 means the optimal night
+  // is tonight => day-of reminder; anything further out => the advance heads-up.
+  const optimalDate = parseYmd(optimalDay.datetime);
+  const isDayOf = optimalDate ? daysUntil(optimalDate, today) <= 0 : false;
+
+  // Only send if the stage matching this night is still open for the cycle.
+  if (isDayOf ? !dayOfOpen : !advanceOpen) return;
 
   const { data: nearbyPlaces } = await deps.supabase.rpc("get_places", {
     p_lat: lat,
@@ -172,8 +199,9 @@ async function processAlert(
 
   await deps.sendEmail({ to: user.email, subject, html });
 
+  const notifiedColumn = isDayOf ? "last_dayof_notified" : "last_notified";
   await deps.supabase
     .from("alerts")
-    .update({ last_notified: today.toISOString() })
+    .update({ [notifiedColumn]: today.toISOString() })
     .eq("id", alert.id);
 }

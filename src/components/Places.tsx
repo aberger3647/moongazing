@@ -77,7 +77,7 @@ export const Places = ({
                   className="-mx-3 flex items-center justify-between gap-4 rounded-lg px-3 py-4 transition hover:bg-white/5"
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-ink">{place.place_name}</p>
+                    <p className="font-semibold text-ink">{place.place_name}</p>
                     <p className="mt-0.5 text-sm text-ink-mute">{place.category}</p>
                   </div>
                   <p className="shrink-0 whitespace-nowrap text-sm font-medium tabular-nums text-ink-soft">

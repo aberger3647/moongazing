@@ -171,6 +171,87 @@ Deno.test("skips the email when last_notified is within the renotify window", as
   assertEquals(sendEmail.calls.length, 0);
 });
 
+Deno.test("sends a day-of 'tonight' reminder and stamps last_dayof_notified when the optimal night is today", async () => {
+  const { handler, sendEmail, supabaseCalls } = harness({
+    alertRows: [baseAlertRow()],
+    forecastDays: [
+      // 2026-06-10 is fixedNow(): the optimal night is tonight.
+      { datetime: "2026-06-10", moonphase: 0.5, conditions: "Clear" },
+    ],
+  });
+
+  const res = await handler(req());
+  assertEquals(res.status, 200);
+  assertEquals(sendEmail.calls.length, 1);
+  const [emailArgs] = sendEmail.calls[0] as [{ subject: string; html: string }];
+  assert(emailArgs.subject.startsWith("Tonight:"));
+  assert(emailArgs.html.includes("Optimal moon gazing tonight"));
+
+  // The day-of column is stamped; the advance column is left untouched.
+  const updateCalls = supabaseCalls.from.filter((c) =>
+    c.ops.some((o) => o.method === "update")
+  );
+  assertEquals(updateCalls.length, 1);
+  const updateArgs = updateCalls[0].ops.find((o) => o.method === "update")!
+    .args[0] as Record<string, unknown>;
+  assertEquals(typeof updateArgs.last_dayof_notified, "string");
+  assertEquals("last_notified" in updateArgs, false);
+});
+
+Deno.test("does not resend the day-of reminder when last_dayof_notified is within the window", async () => {
+  const fiveDaysAgo = new Date(fixedNow().getTime() - 5 * 86400_000).toISOString();
+  const { handler, sendEmail } = harness({
+    alertRows: [baseAlertRow({ last_dayof_notified: fiveDaysAgo })],
+    forecastDays: [
+      { datetime: "2026-06-10", moonphase: 0.5, conditions: "Clear" },
+    ],
+  });
+
+  const res = await handler(req());
+  assertEquals(res.status, 200);
+  assertEquals(sendEmail.calls.length, 0);
+});
+
+Deno.test("still sends the day-of reminder after the advance heads-up already fired", async () => {
+  // Advance went out 8 days ago (still inside the 25-day window) but the day-of
+  // hasn't, and tonight is the optimal night.
+  const eightDaysAgo = new Date(fixedNow().getTime() - 8 * 86400_000).toISOString();
+  const { handler, sendEmail, supabaseCalls } = harness({
+    alertRows: [
+      baseAlertRow({ last_notified: eightDaysAgo, last_dayof_notified: null }),
+    ],
+    forecastDays: [
+      { datetime: "2026-06-10", moonphase: 0.5, conditions: "Clear" },
+    ],
+  });
+
+  const res = await handler(req());
+  assertEquals(res.status, 200);
+  assertEquals(sendEmail.calls.length, 1);
+  const updateCalls = supabaseCalls.from.filter((c) =>
+    c.ops.some((o) => o.method === "update")
+  );
+  const updateArgs = updateCalls[0].ops.find((o) => o.method === "update")!
+    .args[0] as Record<string, unknown>;
+  assertEquals(typeof updateArgs.last_dayof_notified, "string");
+});
+
+Deno.test("skips entirely (no email) when both notification stages are within the window", async () => {
+  const recent = new Date(fixedNow().getTime() - 3 * 86400_000).toISOString();
+  const { handler, sendEmail } = harness({
+    alertRows: [
+      baseAlertRow({ last_notified: recent, last_dayof_notified: recent }),
+    ],
+    forecastDays: [
+      { datetime: "2026-06-10", moonphase: 0.5, conditions: "Clear" },
+    ],
+  });
+
+  const res = await handler(req());
+  assertEquals(res.status, 200);
+  assertEquals(sendEmail.calls.length, 0);
+});
+
 Deno.test("skips alerts missing email/lat/lng without throwing", async () => {
   const warnSpy = console.warn;
   console.warn = () => {};

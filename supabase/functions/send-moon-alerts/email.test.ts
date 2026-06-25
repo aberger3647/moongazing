@@ -19,11 +19,18 @@ function render(datetime: string, todayIso = "2026-06-10T00:00:00Z") {
 }
 
 Deno.test("buildAlertEmail subject and body title-case the location and spell out the date", () => {
+  // render() defaults today to 2026-06-10, so this optimal night is tonight.
   const { subject, html } = render("2026-06-10");
-  assertEquals(subject, "Moon Gazing Alert for Austin Tx");
+  assertEquals(subject, "Tonight: Moon Gazing in Austin Tx");
   assertStringIncludes(html, "Austin Tx");
   assertStringIncludes(html, "June 10");
   assertStringIncludes(html, "tok-1");
+});
+
+Deno.test("subject leads with 'Tonight' on the night itself and 'Alert' for an advance night", () => {
+  // Same day => the day-of reminder; a future night => the advance heads-up.
+  assertEquals(render("2026-06-10").subject, "Tonight: Moon Gazing in Austin Tx");
+  assertEquals(render("2026-06-13").subject, "Moon Gazing Alert for Austin Tx");
 });
 
 Deno.test("heading says 'tonight' only when the optimal night is today", () => {
