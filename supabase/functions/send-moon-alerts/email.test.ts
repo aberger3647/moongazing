@@ -27,27 +27,27 @@ Deno.test("buildAlertEmail subject and body title-case the location and spell ou
 });
 
 Deno.test("heading says 'tonight' only when the optimal night is today", () => {
-  assertStringIncludes(render("2026-06-10").html, "Optimal Moon Gazing tonight");
+  assertStringIncludes(render("2026-06-10").html, "Optimal moon gazing tonight");
 });
 
 Deno.test("heading says 'tomorrow night' for the next day", () => {
   const { html } = render("2026-06-11");
-  assertStringIncludes(html, "Optimal Moon Gazing tomorrow night");
-  assert(!html.includes("Gazing tonight"));
+  assertStringIncludes(html, "Optimal moon gazing tomorrow night");
+  assert(!html.includes("gazing tonight"));
 });
 
 Deno.test("heading names the weekday for a night later this week", () => {
   // 2026-06-13 is a Saturday; the alert is generated Wed 2026-06-10.
   const { html } = render("2026-06-13");
-  assertStringIncludes(html, "Optimal Moon Gazing Saturday night");
-  assert(!html.includes("Gazing tonight"));
+  assertStringIncludes(html, "Optimal moon gazing Saturday night");
+  assert(!html.includes("gazing tonight"));
 });
 
 Deno.test("heading falls back to the full date a week out", () => {
   // 7 days out lands on the same weekday as today, so spell the date instead.
   const { html } = render("2026-06-17");
-  assertStringIncludes(html, "Optimal Moon Gazing on Wednesday, June 17");
-  assert(!html.includes("Gazing tonight"));
+  assertStringIncludes(html, "Optimal moon gazing on Wednesday, June 17");
+  assert(!html.includes("gazing tonight"));
 });
 
 Deno.test("email copy contains no em dashes", () => {
@@ -55,7 +55,14 @@ Deno.test("email copy contains no em dashes", () => {
 });
 
 Deno.test("buildAlertEmail omits the nearby-places block when none are supplied", () => {
-  assert(!render("2026-06-10").html.includes("Nearby Certified Dark Sky Places"));
+  assert(!render("2026-06-10").html.includes("Where to Gaze"));
+});
+
+Deno.test("buildAlertEmail CTA deep-links to the alert's location", () => {
+  const { html } = render("2026-06-10");
+  // "See the forecast" should open this location's forecast, not the bare home
+  // page (the frontend reads ?location=).
+  assertStringIncludes(html, "?location=austin%20tx");
 });
 
 Deno.test("buildAlertEmail lists nearby places with distance in whole miles", () => {
@@ -71,11 +78,28 @@ Deno.test("buildAlertEmail lists nearby places with distance in whole miles", ()
     baseUrl: "https://moongaz.ing",
     today: new Date("2026-06-10T00:00:00Z"),
   });
-  assertStringIncludes(html, "Nearby Certified Dark Sky Places");
+  assertStringIncludes(html, "Where to Gaze");
   assertStringIncludes(html, "Big Bend");
   assertStringIncludes(html, "7 miles away");
   assertStringIncludes(html, "Enchanted Rock");
   assertStringIncludes(html, "31 miles away");
+});
+
+Deno.test("buildAlertEmail draws dividers only between places, not under the last", () => {
+  const { html } = buildAlertEmail({
+    location: "austin tx",
+    dayData: { datetime: "2026-06-10" },
+    places: [
+      { place_name: "Big Bend", category: "Park", distance: 12345 },
+      { place_name: "Enchanted Rock", category: "Park", distance: 50000 },
+    ],
+    unsubscribeToken: "tok",
+    baseUrl: "https://moongaz.ing",
+    today: new Date("2026-06-10T00:00:00Z"),
+  });
+  // Two places => exactly one separator line (between them), none trailing.
+  const dividers = html.split("border-bottom: 1px solid #2f2f5c").length - 1;
+  assertEquals(dividers, 1);
 });
 
 Deno.test("buildAlertEmail manage-alerts link includes baseUrl and token", () => {

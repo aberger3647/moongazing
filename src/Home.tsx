@@ -8,7 +8,8 @@ import {
   moonSvgs,
   titleCase,
 } from "./utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { usePlaces } from "./hooks/usePlaces";
 
 interface HomeProps {
@@ -24,6 +25,9 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLon, setUserLon] = useState<number | null>(null);
   const [radius, setRadius] = useState<number>(482803);
+  const [searchParams] = useSearchParams();
+  // The alert email's "See the forecast" links here as /?location=<city>.
+  const initialLocation = searchParams.get("location") ?? "";
 
   const userLocation =
     userLat !== null && userLon !== null ? { lat: userLat, lng: userLon } : null;
@@ -56,15 +60,14 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
     fetchMoonPhase();
   }, []);
 
-  // when user submits location, set lat/long in state & get conditions
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const formLocation = formData.get("location");
-    if (typeof formLocation === "string" && formLocation.trim() !== "") {
+  // Resolve a location string to conditions and push it into state. Shared by
+  // the search form and the email deep-link below.
+  const runSearch = useCallback(
+    async (rawLocation: string) => {
+      if (!rawLocation.trim()) return;
       setLoading(true);
       try {
-        const fetchedConditions = await getConditions({ location: formLocation });
+        const fetchedConditions = await getConditions({ location: rawLocation });
         if (fetchedConditions && fetchedConditions.resolvedAddress) {
           setConditions(fetchedConditions);
           setLocation(fetchedConditions.resolvedAddress);
@@ -77,8 +80,24 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
       } finally {
         setLoading(false);
       }
-    }
+    },
+    [setLocation, setCloudcover],
+  );
+
+  // when user submits location, set lat/long in state & get conditions
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const formLocation = formData.get("location");
+    if (typeof formLocation === "string") void runSearch(formLocation);
   };
+
+  // Deep link from the alert email: load the alert's location on arrival so the
+  // CTA lands on that place's forecast instead of the empty home screen. Once.
+  useEffect(() => {
+    if (initialLocation.trim()) void runSearch(initialLocation);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const hasResults = !loading && conditions && location;
 
@@ -112,6 +131,7 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
               id="location"
               placeholder="City"
               autoComplete="off"
+              defaultValue={initialLocation}
               className="min-w-0 flex-1 bg-transparent capitalize text-ink outline-none placeholder:text-ink-mute"
             />
             <button type="submit" className="btn btn-primary shrink-0" disabled={loading}>

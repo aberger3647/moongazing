@@ -117,6 +117,13 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
       const titledLocation = titleCase(location);
       const font =
         "'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
+      // Herculanum is the site's display face for the wordmark; mirrors the alert
+      // email (supabase/functions/send-moon-alerts/email.ts). Apple Mail resolves
+      // it as a system font, the @font-face serves it to other capable clients,
+      // and the rest fall back to a serif.
+      const displayFont =
+        "'Herculanum', 'Herculanum LT Std', 'Trajan Pro', ui-serif, Georgia, 'Times New Roman', serif";
+      const origin = window.location.origin;
       const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -127,6 +134,12 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
   <title>Moon Gazing Alerts</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+    @font-face {
+      font-family: 'Herculanum';
+      src: url('${origin}/Herculanum.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
     body { margin: 0 !important; padding: 0 !important; background-color: #0f0f30; }
     a { text-decoration: none; }
     @media only screen and (max-width: 620px) {
@@ -140,11 +153,13 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0f0f30; background-image: linear-gradient(180deg, #07071c 0%, #0f0f30 42%, #181747 74%, #232255 100%);">
     <tr>
       <td align="center" style="padding: 32px 16px;">
-        <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 600px; max-width: 600px; background-color: #13132e; border: 1px solid #2b2a55; border-radius: 16px; overflow: hidden;">
+        <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 600px; max-width: 600px; background-color: #13132e; border-radius: 16px; overflow: hidden;">
           <tr>
             <td class="px" align="center" style="padding: 44px 40px 12px;">
-              <div style="width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%; background-color: #ffe8a6; background-image: radial-gradient(circle at 36% 30%, #fff7df 0%, #ffe8a6 50%, #f4dc9f 100%); box-shadow: 0 0 28px rgba(255, 232, 166, 0.45), 0 0 56px rgba(255, 232, 166, 0.22);"></div>
-              <div style="font-family: ${font}; font-size: 32px; font-weight: 600; letter-spacing: 0.5px; color: #f3f2ff;">Moongaz.ing</div>
+              <div style="width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 50%; box-shadow: 0 0 28px rgba(255, 232, 166, 0.45), 0 0 56px rgba(255, 232, 166, 0.22);">
+                <img src="${origin}/full_moon.png" width="72" height="72" alt="Full moon" style="display: block; width: 72px; height: 72px; border-radius: 50%;">
+              </div>
+              <div style="font-family: ${displayFont}; font-size: 34px; font-weight: 600; letter-spacing: 1px; color: #f3f2ff;">Moongaz.ing</div>
             </td>
           </tr>
           <tr>
