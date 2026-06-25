@@ -61,6 +61,12 @@ Deno.test("email copy contains no em dashes", () => {
   assert(!render("2026-06-13").html.includes("—"));
 });
 
+Deno.test("moon image carries a cream placeholder so it doesn't flash in or break before loading", () => {
+  // The <img> and its wrapper get the moon's base color, so a slow or blocked
+  // image shows a filled disc instead of an empty box / broken-image icon.
+  assertStringIncludes(render("2026-06-13").html, "background-color: #f3e5a6");
+});
+
 Deno.test("buildAlertEmail omits the nearby-places block when none are supplied", () => {
   assert(!render("2026-06-10").html.includes("Where to Gaze"));
 });

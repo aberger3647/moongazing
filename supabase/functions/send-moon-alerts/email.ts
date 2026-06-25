@@ -142,8 +142,8 @@ export function buildAlertEmail({
         <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 600px; max-width: 600px; background-color: #13132e; border-radius: 16px; overflow: hidden;">
           <tr>
             <td class="px" align="center" style="padding: 44px 40px 12px;">
-              <div style="width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 50%; box-shadow: 0 0 28px rgba(255, 232, 166, 0.45), 0 0 56px rgba(255, 232, 166, 0.22);">
-                <img src="${baseUrl}/full_moon.png" width="72" height="72" alt="Full moon" style="display: block; width: 72px; height: 72px; border-radius: 50%;">
+              <div style="width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 50%; background-color: #f3e5a6; box-shadow: 0 0 28px rgba(255, 232, 166, 0.45), 0 0 56px rgba(255, 232, 166, 0.22);">
+                <img src="${baseUrl}/full_moon.png" width="72" height="72" alt="Full moon" style="display: block; width: 72px; height: 72px; border-radius: 50%; background-color: #f3e5a6;">
               </div>
               <div style="font-family: ${displayFont}; font-size: 34px; font-weight: 600; letter-spacing: 1px; color: #f3f2ff;">Moongaz.ing</div>
             </td>
