@@ -4,6 +4,7 @@ import {
   determineMoonPhase,
   getMoonPhase,
   getConditions,
+  reverseGeocode,
   setFavicon,
   titleCase,
 } from "./utils";
@@ -72,19 +73,30 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
   }, []);
 
   // Resolve a location string to conditions and push it into state. Shared by
-  // the search form and the email deep-link below.
+  // the search form and the email deep-link below. `displayName` lets callers
+  // override the label shown to the user — used by "use my current location",
+  // where we search by precise lat,lng (accurate weather + nearby parks) but
+  // want to show the reverse-geocoded city instead of the coordinates Visual
+  // Crossing echoes back.
   const runSearch = useCallback(
-    async (rawLocation: string) => {
+    async (rawLocation: string, displayName?: string) => {
       if (!rawLocation.trim()) return;
       setLoading(true);
       try {
         const fetchedConditions = await getConditions({ location: rawLocation });
         if (fetchedConditions && fetchedConditions.resolvedAddress) {
-          setConditions(fetchedConditions);
-          setLocation(fetchedConditions.resolvedAddress);
-          setCloudcover(fetchedConditions.currentConditions?.cloudcover ?? null);
-          setUserLat(fetchedConditions.latitude);
-          setUserLon(fetchedConditions.longitude);
+          const resolved = displayName
+            ? {
+                ...fetchedConditions,
+                resolvedAddress: displayName,
+                address: displayName,
+              }
+            : fetchedConditions;
+          setConditions(resolved);
+          setLocation(resolved.resolvedAddress);
+          setCloudcover(resolved.currentConditions?.cloudcover ?? null);
+          setUserLat(resolved.latitude);
+          setUserLon(resolved.longitude);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -104,8 +116,9 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
   };
 
   // Auto-detect the visitor's location, then resolve it through the same search
-  // path: Visual Crossing accepts a "lat,lng" string and returns a readable
-  // resolvedAddress, so the results render exactly as a typed search would.
+  // path. Visual Crossing accepts a "lat,lng" string but echoes it back as the
+  // resolvedAddress, so we reverse-geocode the coords to the nearest city and
+  // show that name while still fetching weather/parks for the precise spot.
   const onUseMyLocation = useCallback(() => {
     if (!("geolocation" in navigator)) {
       setGeoError("Location isn't supported by this browser.");
@@ -114,10 +127,11 @@ export const Home = ({ location, setLocation, setCloudcover }: HomeProps) => {
     setGeoError(null);
     setGeoLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setGeoLoading(false);
+      async (pos) => {
         const { latitude, longitude } = pos.coords;
-        void runSearch(`${latitude},${longitude}`);
+        const city = await reverseGeocode(latitude, longitude);
+        setGeoLoading(false);
+        void runSearch(`${latitude},${longitude}`, city ?? undefined);
       },
       (err) => {
         setGeoLoading(false);
