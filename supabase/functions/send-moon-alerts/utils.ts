@@ -35,24 +35,38 @@ export interface DayData {
   moonphase?: number;
 }
 
-// Among the forecast days, find the one whose moonphase is closest to 0.5
-// (the full moon) within `tolerance`, AND whose conditions include "Clear".
-// Visual Crossing uses moonphase 0=new, 0.5=full, 1=new.
+// Which lunar phase an alert targets. "full" = moon gazing (brightest, moonphase
+// 0.5); "new" = stargazing (darkest skies, moonphase 0 or 1).
+export type PhaseTarget = "full" | "new";
+
+// Distance from a Visual Crossing moonphase (0=new, 0.5=full, 1=new) to the
+// nearest occurrence of the target phase. For "new", both 0 and 1 are new moons,
+// so the distance wraps around the ends.
+export function phaseDistance(moonphase: number, target: PhaseTarget): number {
+  return target === "full"
+    ? Math.abs(moonphase - 0.5)
+    : Math.min(moonphase, 1 - moonphase);
+}
+
+// Among the forecast days, find the one whose moonphase is closest to the target
+// phase within `tolerance`, AND whose conditions include "Clear". Defaults to the
+// full moon (moon gazing) so existing callers are unchanged.
 export function findOptimalDay(
   days: DayData[],
   tolerance: number,
+  target: PhaseTarget = "full",
 ): DayData | null {
   const candidates = days
     .filter(
       (d) =>
         typeof d.moonphase === "number" &&
-        Math.abs(d.moonphase - 0.5) <= tolerance &&
+        phaseDistance(d.moonphase, target) <= tolerance &&
         (d.conditions || "").includes("Clear"),
     )
     .sort(
       (a, b) =>
-        Math.abs((a.moonphase as number) - 0.5) -
-        Math.abs((b.moonphase as number) - 0.5),
+        phaseDistance(a.moonphase as number, target) -
+        phaseDistance(b.moonphase as number, target),
     );
   return candidates[0] ?? null;
 }

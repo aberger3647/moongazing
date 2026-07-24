@@ -40,6 +40,10 @@ function describeNight(s: string | undefined, today: Date): string {
   return `on ${formatFriendlyDate(s)}`;
 }
 
+// "full" = moon gazing (bright full moon); "new" = stargazing (dark, moonless
+// skies). Controls the copy and hero imagery; the layout is otherwise identical.
+export type AlertEmailKind = "full" | "new";
+
 export interface BuildAlertEmailArgs {
   location: string;
   dayData: DayData;
@@ -48,6 +52,8 @@ export interface BuildAlertEmailArgs {
   baseUrl: string;
   /** The day the alert is sent, used to phrase how far off the optimal night is. */
   today: Date;
+  /** Which alert this is. Defaults to the full-moon "moon gazing" alert. */
+  kind?: AlertEmailKind;
 }
 
 export function buildAlertEmail({
@@ -57,6 +63,7 @@ export function buildAlertEmail({
   unsubscribeToken,
   baseUrl,
   today,
+  kind = "full",
 }: BuildAlertEmailArgs): { subject: string; html: string } {
   const titled = titleCase(location);
   const friendlyDate = formatFriendlyDate(dayData.datetime);
@@ -65,9 +72,42 @@ export function buildAlertEmail({
   // stands out from the earlier advance heads-up sharing the same inbox thread.
   const optimalDate = parseYmd(dayData.datetime);
   const isTonight = optimalDate ? daysUntil(optimalDate, today) <= 0 : false;
-  const subject = isTonight
-    ? `Tonight: Moon Gazing in ${titled}`
-    : `Moon Gazing Alert for ${titled}`;
+
+  // Per-kind copy + hero. The full-moon hero is the gold moon image with a warm
+  // glow; the new-moon hero is a pure-CSS dark disc (no image — there's no
+  // new_moon.png and email clients render SVG poorly) with a faint indigo halo.
+  const variant = kind === "new"
+    ? {
+      subject: isTonight
+        ? `Tonight: Stargazing in ${titled}`
+        : `Stargazing Alert for ${titled}`,
+      heading: `Optimal stargazing ${when}`,
+      bodyLine1:
+        `The new moon means the darkest skies over <strong style="color: #ffffff;">${titled}</strong> on <strong style="color: #ffffff;">${friendlyDate}</strong>.`,
+      bodyLine2:
+        `Clear skies are forecast and, with the moon all but absent, the stars will be at their brightest.`,
+      preheader: `A clear, moonless night over ${titled} on ${friendlyDate}.`,
+      footerReason:
+        `You're receiving this because you have an active stargazing alert.`,
+      heroHtml:
+        `<div style="width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 50%; background-color: #1b1b42; border: 1px solid #3a3a6b; box-shadow: 0 0 26px rgba(129, 140, 248, 0.30), 0 0 52px rgba(129, 140, 248, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.6);"><div style="font-size: 1px; line-height: 72px;">&nbsp;</div></div>`,
+    }
+    : {
+      subject: isTonight
+        ? `Tonight: Moon Gazing in ${titled}`
+        : `Moon Gazing Alert for ${titled}`,
+      heading: `Optimal moon gazing ${when}`,
+      bodyLine1:
+        `The full moon will be visible in <strong style="color: #ffffff;">${titled}</strong> on <strong style="color: #ffffff;">${friendlyDate}</strong>.`,
+      bodyLine2:
+        `Clear skies are forecast and the moon will be at its brightest.`,
+      preheader: `A clear sky and a full moon over ${titled} on ${friendlyDate}.`,
+      footerReason:
+        `You're receiving this because you have an active moon gazing alert.`,
+      heroHtml:
+        `<div style="width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 50%; background-color: #f3e5a6; box-shadow: 0 0 28px rgba(255, 232, 166, 0.45), 0 0 56px rgba(255, 232, 166, 0.22);"><img src="${baseUrl}/full_moon.png" width="72" height="72" alt="Full moon" style="display: block; width: 72px; height: 72px; border-radius: 50%; background-color: #f3e5a6;"></div>`,
+    };
+  const subject = variant.subject;
 
   // Mirrors the site's dark celestial look (src/App.tsx night-sky gradient,
   // the gold full moon, and the cream-pill CTA). Inline styles + a table shell
@@ -135,24 +175,22 @@ export function buildAlertEmail({
   </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0f0f30;">
-  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #0f0f30; font-size: 1px; line-height: 1px;">A clear sky and a full moon over ${titled} on ${friendlyDate}.</div>
+  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #0f0f30; font-size: 1px; line-height: 1px;">${variant.preheader}</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0f0f30; background-image: linear-gradient(180deg, #07071c 0%, #0f0f30 42%, #181747 74%, #232255 100%);">
     <tr>
       <td align="center" style="padding: 32px 16px;">
         <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 600px; max-width: 600px; background-color: #13132e; border-radius: 16px; overflow: hidden;">
           <tr>
             <td class="px" align="center" style="padding: 44px 40px 12px;">
-              <div style="width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 50%; background-color: #f3e5a6; box-shadow: 0 0 28px rgba(255, 232, 166, 0.45), 0 0 56px rgba(255, 232, 166, 0.22);">
-                <img src="${baseUrl}/full_moon.png" width="72" height="72" alt="Full moon" style="display: block; width: 72px; height: 72px; border-radius: 50%; background-color: #f3e5a6;">
-              </div>
+              ${variant.heroHtml}
               <div style="font-family: ${displayFont}; font-size: 34px; font-weight: 600; letter-spacing: 1px; color: #f3f2ff;">Moongaz.ing</div>
             </td>
           </tr>
           <tr>
             <td class="px" style="padding: 12px 40px 4px;">
-              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px; text-align: center;">Optimal moon gazing ${when}</h2>
-              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">The full moon will be visible in <strong style="color: #ffffff;">${titled}</strong> on <strong style="color: #ffffff;">${friendlyDate}</strong>.</p>
-              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0;">Clear skies are forecast and the moon will be at its brightest.</p>
+              <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px; text-align: center;">${variant.heading}</h2>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">${variant.bodyLine1}</p>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0;">${variant.bodyLine2}</p>
               ${placesBlock}
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 28px auto 8px;">
                 <tr>
@@ -165,7 +203,7 @@ export function buildAlertEmail({
           </tr>
           <tr>
             <td class="px" style="padding: 24px 40px 36px; border-top: 1px solid #2b2a55;">
-              <p style="font-family: ${font}; font-size: 12px; line-height: 1.6; color: #8a90c4; margin: 0 0 10px; text-align: center;">You're receiving this because you have an active moon gazing alert.</p>
+              <p style="font-family: ${font}; font-size: 12px; line-height: 1.6; color: #8a90c4; margin: 0 0 10px; text-align: center;">${variant.footerReason}</p>
               <p style="font-family: ${font}; font-size: 12px; line-height: 1.6; color: #8a90c4; margin: 0; text-align: center;">
                 <a href="${baseUrl}/manage-alerts?token=${unsubscribeToken}" style="color: #ffe8a6; text-decoration: none;">Update preferences</a>
                 &nbsp;•&nbsp;

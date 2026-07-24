@@ -1,5 +1,6 @@
 import {
   assert,
+  assertAlmostEquals,
   assertEquals,
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
@@ -7,6 +8,7 @@ import {
   findOptimalDay,
   formatDate,
   getForecastDateRange,
+  phaseDistance,
   shouldRenotify,
   titleCase,
 } from "./utils.ts";
@@ -42,6 +44,36 @@ Deno.test("findOptimalDay returns null when nothing qualifies", () => {
     null,
   );
   assertEquals(findOptimalDay([], 0.05), null);
+});
+
+Deno.test("phaseDistance measures distance to the target phase, wrapping for new moon", () => {
+  // Full moon: distance from 0.5.
+  assertAlmostEquals(phaseDistance(0.5, "full"), 0);
+  assertAlmostEquals(phaseDistance(0.45, "full"), 0.05);
+  // New moon: both 0 and 1 are new, so the distance wraps around the ends.
+  assertAlmostEquals(phaseDistance(0, "new"), 0);
+  assertAlmostEquals(phaseDistance(1, "new"), 0);
+  assertAlmostEquals(phaseDistance(0.98, "new"), 0.02);
+  assertAlmostEquals(phaseDistance(0.5, "new"), 0.5);
+});
+
+Deno.test("findOptimalDay with target 'new' picks the Clear night closest to the new moon", () => {
+  const days = [
+    { datetime: "2026-06-10", moonphase: 0.5, conditions: "Clear" }, // full moon, wrong target
+    { datetime: "2026-06-11", moonphase: 0.03, conditions: "Clear" }, // 0.03 from new
+    { datetime: "2026-06-12", moonphase: 0.98, conditions: "Clear" }, // 0.02 from new — closest
+    { datetime: "2026-06-13", moonphase: 0.0, conditions: "Cloudy" }, // exact new, wrong sky
+  ];
+  const result = findOptimalDay(days, 0.05, "new");
+  assertEquals(result?.datetime, "2026-06-12");
+});
+
+Deno.test("findOptimalDay with target 'new' rejects the full moon and out-of-tolerance crescents", () => {
+  const days = [
+    { datetime: "2026-06-10", moonphase: 0.5, conditions: "Clear" }, // full moon
+    { datetime: "2026-06-11", moonphase: 0.12, conditions: "Clear" }, // crescent, out of tolerance
+  ];
+  assertEquals(findOptimalDay(days, 0.05, "new"), null);
 });
 
 Deno.test("findOptimalDay ignores days with non-numeric moonphase", () => {

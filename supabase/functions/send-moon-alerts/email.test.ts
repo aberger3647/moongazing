@@ -67,6 +67,38 @@ Deno.test("moon image carries a cream placeholder so it doesn't flash in or brea
   assertStringIncludes(render("2026-06-13").html, "background-color: #f3e5a6");
 });
 
+Deno.test("the 'new' (stargazing) variant swaps the copy and drops the full-moon image", () => {
+  const { subject, html } = buildAlertEmail({
+    location: "austin tx",
+    dayData: { datetime: "2026-06-10", moonphase: 0.0, conditions: "Clear" },
+    places: [],
+    unsubscribeToken: "tok-1",
+    baseUrl: "https://moongaz.ing",
+    today: new Date("2026-06-10T00:00:00Z"),
+    kind: "new",
+  });
+  assertEquals(subject, "Tonight: Stargazing in Austin Tx");
+  assertStringIncludes(html, "Optimal stargazing tonight");
+  assertStringIncludes(html, "new moon");
+  assertStringIncludes(html, "active stargazing alert");
+  // The dark-disc hero is pure CSS — no full-moon image or its cream fill.
+  assert(!html.includes("full_moon.png"));
+  assert(!html.includes("#f3e5a6"));
+});
+
+Deno.test("the 'new' variant advance subject reads 'Stargazing Alert'", () => {
+  const { subject } = buildAlertEmail({
+    location: "austin tx",
+    dayData: { datetime: "2026-06-13", moonphase: 0.0, conditions: "Clear" },
+    places: [],
+    unsubscribeToken: "tok-1",
+    baseUrl: "https://moongaz.ing",
+    today: new Date("2026-06-10T00:00:00Z"),
+    kind: "new",
+  });
+  assertEquals(subject, "Stargazing Alert for Austin Tx");
+});
+
 Deno.test("buildAlertEmail omits the nearby-places block when none are supplied", () => {
   assert(!render("2026-06-10").html.includes("Where to Gaze"));
 });

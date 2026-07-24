@@ -96,10 +96,10 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
 
       const unsubscribeToken = alertData?.unsubscribe_token;
 
-      // Evaluate this brand-new alert immediately so the subscriber gets the
-      // moon alert right away if the upcoming full moon is clear, instead of
-      // waiting for the next daily cron run. Fire-and-forget — it's throttled
-      // server-side and must not delay or break the signup flow.
+      // Evaluate this brand-new alert immediately so the subscriber gets an
+      // alert right away if an upcoming clear full-moon or new-moon night is in
+      // range, instead of waiting for the next daily cron run. Fire-and-forget —
+      // it's throttled server-side and must not delay or break the signup flow.
       if (unsubscribeToken) {
         void triggerMoonAlertCheck(unsubscribeToken);
       }
@@ -149,7 +149,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
   </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0f0f30;">
-  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #0f0f30; font-size: 1px; line-height: 1px;">You're subscribed to moon gazing alerts for ${titledLocation}. 🌙</div>
+  <div style="display: none; max-height: 0; overflow: hidden; opacity: 0; color: #0f0f30; font-size: 1px; line-height: 1px;">You're subscribed to moon gazing and stargazing alerts for ${titledLocation}. 🌙</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0f0f30; background-image: linear-gradient(180deg, #07071c 0%, #0f0f30 42%, #181747 74%, #232255 100%);">
     <tr>
       <td align="center" style="padding: 32px 16px;">
@@ -165,12 +165,12 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
           <tr>
             <td class="px" style="padding: 12px 40px 4px;">
               <h2 style="font-family: ${font}; font-size: 23px; font-weight: 600; color: #ffe8a6; margin: 12px 0 14px;">Alert Subscription Confirmed! 🌙</h2>
-              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">You've been successfully subscribed to moon gazing alerts for <strong style="color: #ffffff;">${titledLocation}</strong>.</p>
-              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">You'll receive emails when conditions are optimal for moon gazing, including:</p>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">You've been successfully subscribed to moon gazing and stargazing alerts for <strong style="color: #ffffff;">${titledLocation}</strong>.</p>
+              <p style="font-family: ${font}; font-size: 16px; line-height: 1.65; color: #c7cdf2; margin: 0 0 16px;">You'll receive emails when conditions are optimal, including:</p>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0;">
                 <tr>
                   <td style="background-color: #1b1b42; border: 1px solid #2f2f5c; border-radius: 10px; padding: 18px 20px;">
-                    <div style="font-family: ${font}; font-size: 15px; line-height: 2; color: #e6e9ff;">☁️&nbsp;&nbsp;Clear skies forecast<br>🌕&nbsp;&nbsp;Full moon visibility<br>🌌&nbsp;&nbsp;Nearby certified dark sky places</div>
+                    <div style="font-family: ${font}; font-size: 15px; line-height: 2; color: #e6e9ff;">☁️&nbsp;&nbsp;Clear skies forecast<br>🌕&nbsp;&nbsp;Full moon for moon gazing<br>🌑&nbsp;&nbsp;New moon for stargazing<br>🌌&nbsp;&nbsp;Nearby certified dark sky places</div>
                   </td>
                 </tr>
               </table>
@@ -200,7 +200,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
 
       const emailResult = await sendEmail({
         to: email,
-        subject: `Moon Gazing Alert Subscription for ${titledLocation}`,
+        subject: `Moongaz.ing Alert Subscription for ${titledLocation}`,
         html,
       });
 
@@ -222,7 +222,7 @@ export const Alerts = ({ location, lat, lng }: AlertsProps) => {
     <section className="panel animate-rise-in p-6 sm:p-8">
       <h2 className="font-herculanum text-2xl sm:text-3xl text-center">Email Alerts</h2>
       <p className="mt-1.5 max-w-[52ch] text-ink-soft">
-        Email me when moon-gazing conditions are optimal for {titleCase(location)}:
+        Email me when moon-gazing and stargazing conditions are optimal for {titleCase(location)}:
       </p>
       <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-3 sm:flex-row">
         <label htmlFor="alert-email" className="sr-only">

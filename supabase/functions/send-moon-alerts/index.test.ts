@@ -132,6 +132,78 @@ Deno.test("sends an email and updates last_notified when a clear full-moon day i
   assert(typeof updateArgs.last_notified === "string");
 });
 
+Deno.test("sends a stargazing email and stamps last_stargaze_notified for a clear new-moon day", async () => {
+  const { handler, sendEmail, supabaseCalls } = harness({
+    alertRows: [baseAlertRow()],
+    forecastDays: [
+      { datetime: "2026-06-12", moonphase: 0.02, conditions: "Clear" },
+    ],
+  });
+
+  const res = await handler(req());
+  assertEquals(res.status, 200);
+  assertEquals(sendEmail.calls.length, 1);
+  const [emailArgs] = sendEmail.calls[0] as [{ subject: string; html: string }];
+  assert(emailArgs.subject.includes("Stargazing"));
+  assert(emailArgs.html.includes("Optimal stargazing"));
+
+  // Only the stargazing advance column is stamped — not the full-moon columns.
+  const updateCalls = supabaseCalls.from.filter((c) =>
+    c.ops.some((o) => o.method === "update")
+  );
+  assertEquals(updateCalls.length, 1);
+  const updateArgs = updateCalls[0].ops.find((o) => o.method === "update")!
+    .args[0] as Record<string, unknown>;
+  assertEquals(typeof updateArgs.last_stargaze_notified, "string");
+  assertEquals("last_notified" in updateArgs, false);
+});
+
+Deno.test("sends BOTH a moon-gazing and a stargazing email when the window has a clear full and new moon", async () => {
+  const { handler, sendEmail, supabaseCalls } = harness({
+    alertRows: [baseAlertRow()],
+    forecastDays: [
+      { datetime: "2026-06-12", moonphase: 0.5, conditions: "Clear" }, // full
+      { datetime: "2026-06-13", moonphase: 0.02, conditions: "Clear" }, // new
+    ],
+  });
+
+  const res = await handler(req());
+  assertEquals(res.status, 200);
+  assertEquals(sendEmail.calls.length, 2);
+  const subjects = sendEmail.calls.map((c) => (c[0] as { subject: string }).subject);
+  assert(subjects.some((s) => s.includes("Moon Gazing")));
+  assert(subjects.some((s) => s.includes("Stargazing")));
+
+  // Each kind stamps its own advance column.
+  const updated = supabaseCalls.from
+    .filter((c) => c.ops.some((o) => o.method === "update"))
+    .map((c) =>
+      c.ops.find((o) => o.method === "update")!.args[0] as Record<string, unknown>
+    );
+  assertEquals(updated.length, 2);
+  assert(updated.some((u) => "last_notified" in u));
+  assert(updated.some((u) => "last_stargaze_notified" in u));
+});
+
+Deno.test("stargazing throttles independently: a recent full-moon notify does not suppress it", async () => {
+  const recent = new Date(fixedNow().getTime() - 3 * 86400_000).toISOString();
+  const { handler, sendEmail } = harness({
+    // Full-moon notifications both fired recently, but the stargaze columns are
+    // fresh (null), so the new-moon alert must still go out.
+    alertRows: [
+      baseAlertRow({ last_notified: recent, last_dayof_notified: recent }),
+    ],
+    forecastDays: [
+      { datetime: "2026-06-12", moonphase: 0.02, conditions: "Clear" },
+    ],
+  });
+
+  const res = await handler(req());
+  assertEquals(res.status, 200);
+  assertEquals(sendEmail.calls.length, 1);
+  assert((sendEmail.calls[0][0] as { subject: string }).subject.includes("Stargazing"));
+});
+
 Deno.test("queries nearby dark-sky places with the app's ~300-mile radius", async () => {
   // Guards against regressing to a radius so tight the nearby-places section is
   // empty for nearly every subscriber (the previous 50 km bug).

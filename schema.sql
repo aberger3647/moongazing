@@ -36,6 +36,11 @@ CREATE TABLE IF NOT EXISTS alerts (
   location_id BIGINT NOT NULL REFERENCES user_locations(id) ON DELETE CASCADE,
   last_notified TIMESTAMP WITH TIME ZONE,
   last_dayof_notified TIMESTAMP WITH TIME ZONE,
+  -- Stargazing (new-moon) alerts throttle independently of the full-moon columns
+  -- above, since full and new moon are only ~14.75 days apart and RENOTIFY_DAYS
+  -- (25) would otherwise let one suppress the other.
+  last_stargaze_notified TIMESTAMP WITH TIME ZONE,
+  last_stargaze_dayof_notified TIMESTAMP WITH TIME ZONE,
   last_forecast_checked DATE,
   active BOOLEAN DEFAULT TRUE,
   unsubscribe_token UUID DEFAULT gen_random_uuid() NOT NULL UNIQUE,
