@@ -128,6 +128,26 @@ export function buildAlertEmail({
     ? `${baseUrl}/?location=${encodeURIComponent(location)}`
     : baseUrl;
 
+  // The "Add to Calendar" secondary CTA deep-links to the frontend, which
+  // builds the .ics / Google Calendar links client-side — Kong requires an
+  // `apikey` header a plain email link can't send, and Gmail strips `data:`
+  // URIs from email bodies, so neither can be done directly in the email.
+  // dayData.datetime is optional (DayData's type), so skip the button rather
+  // than ever link to a page that can't build an event.
+  const calendarUrl = dayData.datetime
+    ? `${baseUrl}/add-to-calendar?date=${encodeURIComponent(dayData.datetime)}&location=${encodeURIComponent(location)}&kind=${kind}`
+    : null;
+  const calendarBlock = calendarUrl
+    ? `
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 4px auto 8px;">
+                <tr>
+                  <td align="center" style="border-radius: 9999px; border: 1px solid #2f2f5c;">
+                    <a href="${calendarUrl}" style="display: inline-block; padding: 14px 34px; font-family: ${font}; font-size: 16px; font-weight: 700; color: #ffe8a6; border-radius: 9999px;">Add to Calendar</a>
+                  </td>
+                </tr>
+              </table>`
+    : "";
+
   let placesBlock = "";
   if (places.length > 0) {
     const lastIndex = places.length - 1;
@@ -199,6 +219,7 @@ export function buildAlertEmail({
                   </td>
                 </tr>
               </table>
+              ${calendarBlock}
             </td>
           </tr>
           <tr>

@@ -110,6 +110,59 @@ Deno.test("buildAlertEmail CTA deep-links to the alert's location", () => {
   assertStringIncludes(html, "?location=austin%20tx");
 });
 
+Deno.test("buildAlertEmail includes an Add to Calendar link with date, location, and kind", () => {
+  const { html } = render("2026-06-10");
+  assertStringIncludes(html, "Add to Calendar");
+  assertStringIncludes(
+    html,
+    'href="https://moongaz.ing/add-to-calendar?date=2026-06-10&location=austin%20tx&kind=full"',
+  );
+});
+
+Deno.test("the Add to Calendar link carries kind=new for the stargazing variant", () => {
+  const { html } = buildAlertEmail({
+    location: "austin tx",
+    dayData: { datetime: "2026-06-10", moonphase: 0.0, conditions: "Clear" },
+    places: [],
+    unsubscribeToken: "tok-1",
+    baseUrl: "https://moongaz.ing",
+    today: new Date("2026-06-10T00:00:00Z"),
+    kind: "new",
+  });
+  assertStringIncludes(
+    html,
+    'href="https://moongaz.ing/add-to-calendar?date=2026-06-10&location=austin%20tx&kind=new"',
+  );
+});
+
+Deno.test("Add to Calendar link respects baseUrl", () => {
+  const { html } = buildAlertEmail({
+    location: "austin",
+    dayData: { datetime: "2026-06-10" },
+    places: [],
+    unsubscribeToken: "abc",
+    baseUrl: "https://example.com",
+    today: new Date("2026-06-10T00:00:00Z"),
+  });
+  assertStringIncludes(
+    html,
+    'href="https://example.com/add-to-calendar?date=2026-06-10&location=austin&kind=full"',
+  );
+});
+
+Deno.test("buildAlertEmail omits the Add to Calendar link when the optimal day has no datetime", () => {
+  const { html } = buildAlertEmail({
+    location: "austin tx",
+    dayData: { moonphase: 0.5, conditions: "Clear" }, // no datetime
+    places: [],
+    unsubscribeToken: "tok-1",
+    baseUrl: "https://moongaz.ing",
+    today: new Date("2026-06-10T00:00:00Z"),
+  });
+  assert(!html.includes("Add to Calendar"));
+  assert(!html.includes("/add-to-calendar?"));
+});
+
 Deno.test("buildAlertEmail lists nearby places with distance in whole miles", () => {
   const { html } = buildAlertEmail({
     location: "austin tx",

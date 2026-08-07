@@ -1,6 +1,7 @@
 import { Home } from "./Home";
 import { Unsubscribe } from "./Unsubscribe";
 import { ManageAlerts } from "./ManageAlerts";
+import { AddToCalendar } from "./AddToCalendar";
 import { Outlet } from "react-router-dom";
 import { NotFound } from "./NotFound";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -55,6 +56,10 @@ function App() {
         {
           path: "/manage-alerts",
           element: <ManageAlerts />,
+        },
+        {
+          path: "/add-to-calendar",
+          element: <AddToCalendar />,
         },
       ],
     },
