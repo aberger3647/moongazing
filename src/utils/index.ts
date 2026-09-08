@@ -9,3 +9,4 @@ export { moonSvgs } from "./moonSvgs";
 export { sendEmail } from "./emailService";
 export { triggerMoonAlertCheck } from "./triggerMoonAlertCheck";
 export { titleCase } from "./titleCase";
+export { buildSevenDayForecast } from "./buildSevenDayForecast";

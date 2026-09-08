@@ -230,14 +230,7 @@ export const StarsBackground = () => {
   const skyRef = useRef<HTMLDivElement>(null);
   const { gyroAvailable, gyroEnabled, enableGyro } = useSkyParallax(skyRef);
 
-  // A quiet, one-time nudge to turn on tilt on touch devices; it bows out on its own.
-  const [hintDismissed, setHintDismissed] = useState(false);
-  useEffect(() => {
-    if (!gyroAvailable || gyroEnabled) return;
-    const t = setTimeout(() => setHintDismissed(true), 11000);
-    return () => clearTimeout(t);
-  }, [gyroAvailable, gyroEnabled]);
-  const showHint = gyroAvailable && !gyroEnabled && !hintDismissed;
+  const showHint = gyroAvailable && !gyroEnabled;
 
   return (
     <>
@@ -281,31 +274,33 @@ export const StarsBackground = () => {
       </div>
 
       {showHint && (
-        <button
-          type="button"
-          onClick={enableGyro}
-          className="gyro-hint btn btn-ghost fixed bottom-5 left-1/2 z-20 -translate-x-1/2 px-4 py-2 text-sm"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            className="h-4 w-4"
+        <div className="relative z-20 flex justify-center px-5 pt-4">
+          <button
+            type="button"
+            onClick={enableGyro}
+            className="gyro-hint btn btn-ghost px-4 py-2 text-sm"
           >
-            <polyline points="5 9 2 12 5 15" />
-            <polyline points="9 5 12 2 15 5" />
-            <polyline points="15 19 12 22 9 19" />
-            <polyline points="19 9 22 12 19 15" />
-            <line x1="2" x2="22" y1="12" y2="12" />
-            <line x1="12" x2="12" y1="2" y2="22" />
-          </svg>
-          Tilt to look around
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="h-4 w-4"
+            >
+              <polyline points="5 9 2 12 5 15" />
+              <polyline points="9 5 12 2 15 5" />
+              <polyline points="15 19 12 22 9 19" />
+              <polyline points="19 9 22 12 19 15" />
+              <line x1="2" x2="22" y1="12" y2="12" />
+              <line x1="12" x2="12" y1="2" y2="22" />
+            </svg>
+            Tilt to look around
+          </button>
+        </div>
       )}
     </>
   );
