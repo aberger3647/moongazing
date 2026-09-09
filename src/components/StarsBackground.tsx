@@ -230,7 +230,7 @@ export const StarsBackground = () => {
   const skyRef = useRef<HTMLDivElement>(null);
   const { gyroAvailable, gyroEnabled, enableGyro } = useSkyParallax(skyRef);
 
-  const showHint = gyroAvailable && !gyroEnabled;
+  const showTiltControl = gyroAvailable;
 
   return (
     <>
@@ -273,34 +273,34 @@ export const StarsBackground = () => {
         </div>
       </div>
 
-      {showHint && (
-        <div className="relative z-20 flex justify-center px-5 pt-4">
-          <button
-            type="button"
-            onClick={enableGyro}
-            className="gyro-hint btn btn-ghost px-4 py-2 text-sm"
+      {showTiltControl && (
+        <button
+          type="button"
+          onClick={enableGyro}
+          aria-label="Tilt sky"
+          aria-pressed={gyroEnabled}
+          title="Tilt sky"
+          className="gyro-hint btn btn-ghost absolute right-3 top-3 z-20 h-9 w-9 p-0 text-ink-mute opacity-60 hover:opacity-100 focus-visible:opacity-100"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.75}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="h-4 w-4"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className="h-4 w-4"
-            >
-              <polyline points="5 9 2 12 5 15" />
-              <polyline points="9 5 12 2 15 5" />
-              <polyline points="15 19 12 22 9 19" />
-              <polyline points="19 9 22 12 19 15" />
-              <line x1="2" x2="22" y1="12" y2="12" />
-              <line x1="12" x2="12" y1="2" y2="22" />
-            </svg>
-            Tilt to look around
-          </button>
-        </div>
+            <polyline points="5 9 2 12 5 15" />
+            <polyline points="9 5 12 2 15 5" />
+            <polyline points="15 19 12 22 9 19" />
+            <polyline points="19 9 22 12 19 15" />
+            <line x1="2" x2="22" y1="12" y2="12" />
+            <line x1="12" x2="12" y1="2" y2="22" />
+          </svg>
+        </button>
       )}
     </>
   );
